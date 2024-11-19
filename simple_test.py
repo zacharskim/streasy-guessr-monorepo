@@ -29,7 +29,22 @@ async def main():
         # Click the first search result
         # await page.locator("h3").first.click()
 
-        await page.get_by_text('Choose neighborhoods or boroughs').dblclick();
+        await page.get_by_text('Choose neighborhoods or boroughs').click();
+        await page.type('#location-search', 'manhattan', delay=100)  # Human-like typing
+        
+        #was concerned about bot detection but think i don't need to do it all like manul step by step,,,
+        #think i can just slowly use urls similar to those and be fine...
+        #https://streeteasy.com/for-rent/manhattan/price:2000-4500
+        # https://streeteasy.com/for-rent/bronx/price:2000-4500
+        # https://streeteasy.com/for-rent/queens/price:2000-4500 - between 2000 and 4500 example....
+        # https://streeteasy.com/for-rent/queens/price:-4500 - max of 4500 example 
+        # https://streeteasy.com/for-rent/queens/price:4500- min of 4500 example
+        # https://streeteasy.com/for-rent/queens/price:-4500?page=3 - example with page number...
+
+        
+ 
+        
+        # await page.get_by_role("input").fill("example value")
         
         # Take a screenshot of the resulting page
         # page.screenshot(path="screenshot_from_streeteasy.png")
