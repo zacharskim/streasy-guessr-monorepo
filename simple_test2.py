@@ -1,6 +1,7 @@
 from playwright.async_api import async_playwright
 from random import randint, uniform
 import asyncio
+from fake_useragent import UserAgent
 
 
 async def fetch_links_and_coords(page):
@@ -37,6 +38,8 @@ async def visit_and_collect_data(browser, links_data):
         coords = link["coords"]
         print(f"Visiting {href} with coords {coords}...")
 
+        context = await browser.new_context(user_agent= get_headers())
+
         page = await browser.new_page()
 
         # Monitor network requests
@@ -64,10 +67,10 @@ async def visit_and_collect_data(browser, links_data):
         
 async def random_scroll(page):
     """Simulate random scrolling on the page."""
-    for _ in range(randint(3, 7)):  # Random number of scrolls (e.g., 3 to 7 times)
+    for _ in range(randint(3, 5)):  # Random number of scrolls (e.g., 3 to 7 times)
         scroll_distance = randint(200, 800)  # Random distance in pixels
         await page.evaluate(f"window.scrollBy(0, {scroll_distance});")  # Scroll down
-        print(f"Scrolled by {scroll_distance} pixels.")
+        # print(f"Scrolled by {scroll_distance} pixels.")
 
         await asyncio.sleep(uniform(0.5, 2))  # Random delay between scrolls
 
@@ -75,18 +78,30 @@ async def random_scroll(page):
     await page.evaluate("window.scrollTo(0, 0);")
     print("Scrolled back to top.")
 
+def random_headers():
+    ua = UserAgent()
+    random_user_agent = ua.random
+    default_user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36'
+    user_agent = random_user_agent or default_user_agent
+    return user_agent
+
+
 
 async def main():
     url = "https://streeteasy.com/for-rent/manhattan/"
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=False, slow_mo=100)
+        context = await browser.new_context(user_agent= random_headers())
         page = await browser.new_page()
+        print(random_headers())
 
         # Navigate to the main page and extract links
         await page.goto(url)
-        await asyncio.sleep(7)
+        await asyncio.sleep(3)
+        await random_scroll(page)
         links_data = await fetch_links_and_coords(page)
+        print(links_data) 
 
         await asyncio.sleep(7)
 
