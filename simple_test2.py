@@ -59,10 +59,11 @@ async def visit_and_collect_data(browser, links_data):
         # Print or process captured requests
         print(f"Captured {len(network_requests)} requests for {href}:")
         for req in network_requests:
-            print(req["url"])
+            if '.webp' in req['url']:
+                print(req['url'])            
 
         # Add a delay between visits to avoid overloading the server
-        await asyncio.sleep(10)
+        await asyncio.sleep(100)
 
         
 async def random_scroll(page):
@@ -104,7 +105,7 @@ async def main():
         await browser.close()
         print(links_data) 
 
-        await asyncio.sleep(7)
+        await asyncio.sleep(100)
 
         # Visit each link and collect data
         browser_new = await p.chromium.launch(headless=False, slow_mo=100)
