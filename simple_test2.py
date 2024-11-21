@@ -38,7 +38,7 @@ async def visit_and_collect_data(browser, links_data):
         coords = link["coords"]
         print(f"Visiting {href} with coords {coords}...")
 
-        context = await browser.new_context(user_agent= get_headers())
+        context = await browser.new_context(user_agent= random_headers())
 
         page = await browser.new_page()
 
@@ -101,14 +101,15 @@ async def main():
         await asyncio.sleep(3)
         await random_scroll(page)
         links_data = await fetch_links_and_coords(page)
+        await browser.close()
         print(links_data) 
 
         await asyncio.sleep(7)
 
         # Visit each link and collect data
-        await visit_and_collect_data(browser, links_data)
-
-        await browser.close()
+        browser_new = await p.chromium.launch(headless=False, slow_mo=100)
+        context = await browser_new.new_context(user_agent= random_headers())
+        await visit_and_collect_data(browser_new, links_data)
 
 
 if __name__ == "__main__":
