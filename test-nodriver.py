@@ -14,14 +14,25 @@ async def main():
     print(link.attrs['href']) #url...
     print(link.attrs['data-map-points']) #string with two ints seperatated by a comma '40.73789978,-73.97299957'
     # hrefs = [link.get_attributes('href') for link in links if link.get_attributes('href')]
-    await tab.sleep(10)
+    await tab.sleep(3)
     
     try:
         page2 = await tab.get(link.attrs['href'], new_tab=True)
-        await page2.sleep(7)
+        await page2.sleep(3)
         text = await page2.select_all('div.Flickity-count.jsFlickityCount')
         print(text)
-        #works to get the pic count!
+        button = await page2.select_all('button.flickity-button.flickity-prev-next-button.next')
+        print('\n')
+        print(button)
+        
+        print('"listing page" => click')
+        for i in range(0, 2):
+            print('clcking on button kinda?')
+            await button[0].click()
+            await page2.sleep(1)
+
+            #this works! just need to collect the pics now and clean up the code...
+
     except Exception as e:
         print(f"Failed to get the number ig... {e}")
     
