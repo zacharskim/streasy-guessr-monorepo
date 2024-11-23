@@ -5,6 +5,8 @@ import time
 import re
 import typing
 import random
+import os
+import base64
 
 
 # ResponseType, RequestMonitor classes are adapted from a github issue comment: https://github.com/ultrafunkamsterdam/undetected-chromedriver/issues/1832, modified to get image requests...
@@ -61,8 +63,9 @@ class RequestMonitor:
                     res = await page.send(cdp.network.get_response_body(request[1]))
                     if res is None:
                         continue
-                    
-                    if request[0].endswith('.webp'):
+                    #need to edit this to make sure to only get 800 400 pics
+                    #also need to ensure that we wait enough time for them to load...or filter correctly for them...
+                    if request[0].endswith('.webp'): 
                         responses.append({
                             'url': request[0],
                             'body': res[0],  # Assuming res[0] is the response body
@@ -110,17 +113,37 @@ async def main():
         print('"listing page" => clicking through pics')
         for i in range(1, num_of_pics):
             await button[0].click()
-            randomInt = random.randint(2, 5)
+            randomInt = random.randint(5, 10)
             await listing_tab.sleep(randomInt)
 
 
         image_responses = await monitor.receive(listing_tab)
 
         # Print URL and response body
-        for response in image_responses:
-            print(f"URL: {response['url']}")
-            print('Response Body:')
-            print(response['body'] if not response['is_base64'] else 'Base64 encoded data')
+        # for response in image_responses:
+        #     print(f"URL: {response['url']}")
+        #     print('Response Body:')
+        #     print(response['body'] if not response['is_base64'] else 'Base64 encoded data')
+
+        os.makedirs('listing_images', exist_ok=True)
+        
+        for i, response in enumerate(image_responses):
+                url = response['url']
+                body = response['body']
+                is_base64 = response['is_base64']
+                print(url, 'print some info', is_base64)
+
+                # Determine the file extension (default to .webp if not present in URL)
+                file_extension = os.path.splitext(url)[-1] or '.webp'
+                filename = f"image_{i + 1}{file_extension}"
+                file_path = os.path.join('listing_images', filename)
+
+                if is_base64:
+                # Decode Base64 data and save as image
+                    image_data = base64.b64decode(body)
+                    with open(file_path, 'wb') as f:
+                        f.write(image_data)
+                    print(f"Saved base64 image to {file_path}")
         
     except Exception as e:
         print(f"Well, something went wrong....{e}")
@@ -130,32 +153,3 @@ async def main():
 
 if __name__ == '__main__':
     uc.loop().run_until_complete(main())
-
-
-async def crawl():
-    browser = await uc.start(headless=False)
-    monitor = RequestMonitor()
-
-    tab = await browser.get('about:blank') 
-
-    await monitor.listen(tab)
-    
-    # Change URL based on use case.
-    tab = await browser.get('https://streeteasy.com/building/120-riverside-boulevard/ph1m')
-    time.sleep(5)
-
-    xhr_responses = await monitor.receive(tab)
-
-    # Print URL and response body
-    for response in xhr_responses:
-        print(f"URL: {response['url']}")
-        print('Response Body:')
-        print(response['body'] if not response['is_base64'] else 'Base64 encoded data')
-
-# if __name__ == '__main__':
-#     uc.loop().run_until_complete(crawl())
-
-
-# ahh ok so start listenig, go to url, sleep, use clas to recieve, then loop through response..
-
-# for my case, i want to start listening to page2, then loop through those responses etc...
