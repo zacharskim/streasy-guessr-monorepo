@@ -1,117 +1,16 @@
 import asyncio
 import nodriver as uc
-import time
-
-
-async def main():
-    driver = await uc.start()
-
-    tab = await driver.get("https://streeteasy.com/for-rent/manhattan")
-    time.sleep(3)
-    print('loaded streeteasy')
-    links = await tab.select_all('a.listingCard-globalLink')
-    link = links[0]
-    print(link.attrs['href']) #url...
-    print(link.attrs['data-map-points']) #string with two ints seperatated by a comma '40.73789978,-73.97299957'
-    # hrefs = [link.get_attributes('href') for link in links if link.get_attributes('href')]
-    await tab.sleep(3)
-    
-    try:
-        page2 = await tab.get(link.attrs['href'], new_tab=True)
-        await page2.sleep(3)
-        text = await page2.select_all('div.Flickity-count.jsFlickityCount')
-        print(text)
-        button = await page2.select_all('button.flickity-button.flickity-prev-next-button.next')
-        print('\n')
-        print(button)
-        
-        print('"listing page" => click')
-        for i in range(0, 2):
-            print('clcking on button kinda?')
-            await button[0].click()
-            await page2.sleep(5)
-
-        listenXHR(page2)
-        
-        
-        
-
-            #this works! just need to collect the pics now and clean up the code...
-
-    except Exception as e:
-        print(f"Failed to get the number ig... {e}")
-    
-
-    print('we did it')
-    driver.stop()
-    
-def listenXHR(page):
-    async def handler(evt):
-        # get ajax requests
-        print(evt)
-        if evt.type_ is uc.cdp.network.ResourceType.IMAGE:
-            print('hellooo?')
-            
-    time.sleep(3)
-    page.add_handler(uc.cdp.network.ResponseReceived, handler)
-
-
-
-async def receiveXHR(page, requests):
-    responses = []
-    retries = 0
-    max_retries = 5
-
-    # wait at least 2 second after the last xhr request to get some more
-    while True:
-        if last_xhr_request is None or retries > max_retries:
-            break
-
-        if time.time() - last_xhr_request <= 2:
-            retries = retries + 1
-            time.sleep(2)
-
-            continue
-        else:
-            break
-
-    await page # this is very important
-
-    # loop through gathered requests and get its response body
-    for request in requests:
-        try:
-            res = await page.send(cdp.network.get_response_body(request[1]))
-            if res is None:
-                continue
-
-            responses.append({
-                'url': request[0],
-                'body': res[0],
-                'is_base64': res[1]
-            })
-        except Exception as e:
-            print("error get body", e)
-
-    return responses    
-
-
-
-
-# if __name__ == '__main__':
-#     uc.loop().run_until_complete(main())
-
-
-# Code from some github issue comment: https://github.com/ultrafunkamsterdam/undetected-chromedriver/issues/1832, modified to get image requests...
-# need to determine how to tie this in with the code above etc...
-
-# Modified from https://github.com/ultrafunkamsterdam/undetected-chromedriver/issues/1832#issuecomment-2075243964, https://github.com/ultrafunkamsterdam/undetected-chromedriver/issues/1832#issuecomment-2092205033
-# Tested working with Python 3.12.5, Windows 11, nodriver 0.36.
-
-import asyncio
-import nodriver as uc
 from nodriver import cdp
 import time
+import re
 import typing
+import random
+
+
+# ResponseType, RequestMonitor classes are adapted from a github issue comment: https://github.com/ultrafunkamsterdam/undetected-chromedriver/issues/1832, modified to get image requests...
+# need to determine how to tie this in with the code above etc...
+
+# Which was also modified from: https://github.com/ultrafunkamsterdam/undetected-chromedriver/issues/1832#issuecomment-2075243964, https://github.com/ultrafunkamsterdam/undetected-chromedriver/issues/1832#issuecomment-2092205033
 
 class ResponseType(typing.TypedDict):
     url: str
@@ -120,7 +19,6 @@ class ResponseType(typing.TypedDict):
 
 class RequestMonitor:
     def __init__(self):
-        # Typed this way, as I couldn't figure out how to do Typescript-like tuples.
         self.requests: list[list[str | cdp.network.RequestId]] = []
         self.last_request: float | None = None
         self.lock = asyncio.Lock()
@@ -129,7 +27,6 @@ class RequestMonitor:
         async def handler(evt: cdp.network.ResponseReceived):
             async with self.lock:
                 if evt.response.encoded_data_length > 0 and evt.type_ is cdp.network.ResourceType.IMAGE:
-                    #print(f'EVENT PERCEIVED BY BROWSER IS:- {evt.type_}') # If unsure about event or to check behaviour of browser
                     self.requests.append([evt.response.url, evt.request_id])
                     self.last_request = time.time()
 
@@ -140,7 +37,7 @@ class RequestMonitor:
         retries = 0
         max_retries = 5
 
-        # Wait at least 2 seconds after the last XHR request to get some more
+        # Wait at least 2 seconds after the last IMGAGE  request to get some more
         while True:
             if self.last_request is None or retries > max_retries:
                 break
@@ -164,21 +61,82 @@ class RequestMonitor:
                     res = await page.send(cdp.network.get_response_body(request[1]))
                     if res is None:
                         continue
-                    responses.append({
-                        'url': request[0],
-                        'body': res[0],  # Assuming res[0] is the response body
-                        'is_base64': res[1]  # Assuming res[1] indicates if response is base64 encoded
-                    })
+                    
+                    if request[0].endswith('.webp'):
+                        responses.append({
+                            'url': request[0],
+                            'body': res[0],  # Assuming res[0] is the response body
+                            'is_base64': res[1]  # Assuming res[1] indicates if response is base64 encoded
+                        })
                 except Exception as e:
                     print('Error getting body', e)
 
         return responses
 
+
+async def main():
+    driver = await uc.start(headless=False)
+    monitor = RequestMonitor()
+
+    tab = await driver.get("https://streeteasy.com/for-rent/manhattan")
+    time.sleep(3)
+    print('loaded streeteasy')
+    links = await tab.select_all('a.listingCard-globalLink')
+    link = links[0]
+    print(link.attrs['href']) #url...
+    print(link.attrs['data-map-points']) #string with two ints seperatated by a comma '40.73789978,-73.97299957'
+    # hrefs = [link.get_attributes('href') for link in links if link.get_attributes('href')]
+    await tab.sleep(3)
+    
+    try:
+
+        tab = await driver.get('about:blank', new_tab=True) 
+
+        await monitor.listen(tab)
+
+        listing_tab = await tab.get(link.attrs['href'], new_tab=False)
+        await listing_tab.sleep(3)
+        text = await listing_tab.select_all('div.Flickity-count.jsFlickityCount')
+        print(text)
+        num_pics_arr = re.findall(r'\d+', text[0].text_all)
+        if len(num_pics_arr) > 0:
+            num_of_pics = int(num_pics_arr[1])
+
+        
+        button = await listing_tab.select_all('button.flickity-button.flickity-prev-next-button.next')
+        print('\n')
+        # print(button)
+        
+        print('"listing page" => clicking through pics')
+        for i in range(1, num_of_pics):
+            await button[0].click()
+            randomInt = random.randint(2, 5)
+            await listing_tab.sleep(randomInt)
+
+
+        image_responses = await monitor.receive(listing_tab)
+
+        # Print URL and response body
+        for response in image_responses:
+            print(f"URL: {response['url']}")
+            print('Response Body:')
+            print(response['body'] if not response['is_base64'] else 'Base64 encoded data')
+        
+    except Exception as e:
+        print(f"Well, something went wrong....{e}")
+
+    print("Stopping without errors?")
+    driver.stop()
+
+if __name__ == '__main__':
+    uc.loop().run_until_complete(main())
+
+
 async def crawl():
     browser = await uc.start(headless=False)
     monitor = RequestMonitor()
 
-    tab = await browser.get('about:blank') #?? what's the point of this??
+    tab = await browser.get('about:blank') 
 
     await monitor.listen(tab)
     
@@ -194,7 +152,10 @@ async def crawl():
         print('Response Body:')
         print(response['body'] if not response['is_base64'] else 'Base64 encoded data')
 
-if __name__ == '__main__':
-    uc.loop().run_until_complete(crawl())
+# if __name__ == '__main__':
+#     uc.loop().run_until_complete(crawl())
 
 
+# ahh ok so start listenig, go to url, sleep, use clas to recieve, then loop through response..
+
+# for my case, i want to start listening to page2, then loop through those responses etc...
