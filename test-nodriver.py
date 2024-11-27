@@ -35,6 +35,7 @@ class RequestMonitor:
         page.add_handler(cdp.network.ResponseReceived, handler)
 
     async def receive(self, page: uc.Tab):
+        #need to walk through this function more i feel...
         responses: list[ResponseType] = []
         retries = 0
         max_retries = 5
@@ -44,9 +45,9 @@ class RequestMonitor:
             if self.last_request is None or retries > max_retries:
                 break
 
-            if time.time() - self.last_request <= 2:
+            if time.time() - self.last_request <= 5:
                 retries += 1
-                await asyncio.sleep(2)
+                await asyncio.sleep(5)
                 continue
             else:
                 break
@@ -65,7 +66,9 @@ class RequestMonitor:
                         continue
                     #need to edit this to make sure to only get 800 400 pics
                     #also need to ensure that we wait enough time for them to load...or filter correctly for them...
+                    print(request[0], 'cmon')
                     if request[0].endswith('.webp'): 
+                        print('appending...', request[0])
                         responses.append({
                             'url': request[0],
                             'body': res[0],  # Assuming res[0] is the response body
@@ -110,20 +113,21 @@ async def main():
         print('\n')
         # print(button)
         
+        all_image_res = []
         print('"listing page" => clicking through pics')
         for i in range(1, num_of_pics):
             await button[0].click()
             randomInt = random.randint(5, 10)
             await listing_tab.sleep(randomInt)
-
-
-        image_responses = await monitor.receive(listing_tab)
+            await monitor.receive(listing_tab)
+            print('just recieved the network requests for one button click...')
 
         # Print URL and response body
         # for response in image_responses:
         #     print(f"URL: {response['url']}")
         #     print('Response Body:')
         #     print(response['body'] if not response['is_base64'] else 'Base64 encoded data')
+        return
 
         os.makedirs('listing_images', exist_ok=True)
         
@@ -153,3 +157,6 @@ async def main():
 
 if __name__ == '__main__':
     uc.loop().run_until_complete(main())
+
+#eventually, this script should run daily or so for each borough (well maybe not statent island) with 
+#restrictions on prices as well...then update our db,,, i think like 200-300 apartments is solid? maybe only like 100 though...
