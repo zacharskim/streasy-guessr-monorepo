@@ -28,6 +28,8 @@ class RequestMonitor:
     async def listen(self, page: uc.Tab):
         async def handler(evt: cdp.network.ResponseReceived):
             async with self.lock:
+                if evt.response.url.endswith('800_400.webp'):
+                    print(evt.response.url )
                 if evt.response.encoded_data_length > 0 and evt.type_ is cdp.network.ResourceType.IMAGE:
                     self.requests.append([evt.response.url, evt.request_id])
                     self.last_request = time.time()
@@ -66,8 +68,9 @@ class RequestMonitor:
                         continue
                     #need to edit this to make sure to only get 800 400 pics
                     #also need to ensure that we wait enough time for them to load...or filter correctly for them...
-                    print(request[0], 'cmon')
-                    if request[0].endswith('.webp'): 
+                    print(request, 'all the requests??')
+                    # print(res, 'the res?')
+                    if request[0].endswith('800_400.webp'): 
                         print('appending...', request[0])
                         responses.append({
                             'url': request[0],
@@ -119,19 +122,19 @@ async def main():
             await button[0].click()
             randomInt = random.randint(5, 10)
             await listing_tab.sleep(randomInt)
-            await monitor.receive(listing_tab)
-            print('just recieved the network requests for one button click...')
+            pics = await monitor.receive(listing_tab)
+            all_image_res += pics
+            print('just recieved the network requests for one button click...', i)
 
         # Print URL and response body
         # for response in image_responses:
         #     print(f"URL: {response['url']}")
         #     print('Response Body:')
         #     print(response['body'] if not response['is_base64'] else 'Base64 encoded data')
-        return
 
         os.makedirs('listing_images', exist_ok=True)
         
-        for i, response in enumerate(image_responses):
+        for i, response in enumerate(all_image_res):
                 url = response['url']
                 body = response['body']
                 is_base64 = response['is_base64']
