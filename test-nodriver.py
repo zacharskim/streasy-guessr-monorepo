@@ -7,6 +7,7 @@ import typing
 import random
 import os
 import base64
+import requests
 
 
 # ResponseType, RequestMonitor classes are adapted from a github issue comment: https://github.com/ultrafunkamsterdam/undetected-chromedriver/issues/1832, modified to get image requests...
@@ -24,12 +25,14 @@ class RequestMonitor:
         self.requests: list[list[str | cdp.network.RequestId]] = []
         self.last_request: float | None = None
         self.lock = asyncio.Lock()
+        self.imgs_to_save = []
 
     async def listen(self, page: uc.Tab):
         async def handler(evt: cdp.network.ResponseReceived):
             async with self.lock:
                 if evt.response.url.endswith('800_400.webp'):
-                    print(evt.response.url )
+                    print(evt.response.url, 'oh' )
+                    self.imgs_to_save.append(evt.response.url)
                 if evt.response.encoded_data_length > 0 and evt.type_ is cdp.network.ResourceType.IMAGE:
                     self.requests.append([evt.response.url, evt.request_id])
                     self.last_request = time.time()
@@ -68,7 +71,7 @@ class RequestMonitor:
                         continue
                     #need to edit this to make sure to only get 800 400 pics
                     #also need to ensure that we wait enough time for them to load...or filter correctly for them...
-                    print(request, 'all the requests??')
+                    # print(request, 'all the requests??')
                     # print(res, 'the res?')
                     if request[0].endswith('800_400.webp'): 
                         print('appending...', request[0])
@@ -120,10 +123,10 @@ async def main():
         print('"listing page" => clicking through pics')
         for i in range(1, num_of_pics):
             await button[0].click()
-            randomInt = random.randint(5, 10)
+            randomInt = random.randint(3, 5)
             await listing_tab.sleep(randomInt)
-            pics = await monitor.receive(listing_tab)
-            all_image_res += pics
+            # pics = await monitor.receive(listing_tab)
+            # all_image_res += pics
             print('just recieved the network requests for one button click...', i)
 
         # Print URL and response body
@@ -134,23 +137,47 @@ async def main():
 
         os.makedirs('listing_images', exist_ok=True)
         
-        for i, response in enumerate(all_image_res):
-                url = response['url']
-                body = response['body']
-                is_base64 = response['is_base64']
-                print(url, 'print some info', is_base64)
-
+        print(monitor.imgs_to_save)
+        
+        for i, url in enumerate(monitor.imgs_to_save):
+            try:
                 # Determine the file extension (default to .webp if not present in URL)
-                file_extension = os.path.splitext(url)[-1] or '.webp'
+                file_extension = os.path.splitext(url)[-1]
+                if not file_extension:
+                    file_extension = '.webp'
+        
                 filename = f"image_{i + 1}{file_extension}"
                 file_path = os.path.join('listing_images', filename)
 
-                if is_base64:
-                # Decode Base64 data and save as image
-                    image_data = base64.b64decode(body)
-                    with open(file_path, 'wb') as f:
-                        f.write(image_data)
-                    print(f"Saved base64 image to {file_path}")
+                # Fetch the image content from the URL
+                response = requests.get(url, stream=True)
+                response.raise_for_status()  # Raise an exception for HTTP errors
+
+                # Save the image content to the file
+                with open(file_path, 'wb') as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        f.write(chunk)
+
+                print(f"Saved image to {file_path}")
+
+            except Exception as e:
+                print(f"Failed to save image from URL {url}: {e}")
+                # url = response['url']
+                # body = response['body']
+                # is_base64 = response['is_base64']
+                # print(url, 'print some info', is_base64)
+
+                # Determine the file extension (default to .webp if not present in URL)
+                # file_extension = os.path.splitext(url)[-1] or '.webp'
+                # filename = f"image_{i + 1}{file_extension}"
+                # file_path = os.path.join('listing_images', filename)
+
+                # if is_base64:
+                # # Decode Base64 data and save as image
+                #     image_data = base64.b64decode(body)
+                #     with open(file_path, 'wb') as f:
+                #         f.write(image_data)
+                #     print(f"Saved base64 image to {file_path}")
         
     except Exception as e:
         print(f"Well, something went wrong....{e}")
