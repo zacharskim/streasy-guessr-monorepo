@@ -32,10 +32,12 @@ class RequestMonitor:
             async with self.lock:
                 if evt.response.url.endswith('800_400.webp'):
                     print(evt.response.url, 'oh' )
-                    self.imgs_to_save.append(evt.response.url)
-                if evt.response.encoded_data_length > 0 and evt.type_ is cdp.network.ResourceType.IMAGE:
                     self.requests.append([evt.response.url, evt.request_id])
                     self.last_request = time.time()
+                    self.imgs_to_save.append(evt.response.url)
+                # if evt.response.encoded_data_length > 0 and evt.type_ is cdp.network.ResourceType.IMAGE:
+                #     self.requests.append([evt.response.url, evt.request_id])
+                #     self.last_request = time.time()
 
         page.add_handler(cdp.network.ResponseReceived, handler)
 
@@ -61,6 +63,8 @@ class RequestMonitor:
 
         # Loop through gathered requests and get its response body
         async with self.lock:
+            print('about to loop through requests...')
+            print(self.requests, 'the request arr')
             for request in self.requests:
                 try:
                     if not isinstance(request[1], cdp.network.RequestId):
@@ -92,7 +96,6 @@ async def main():
 
     tab = await driver.get("https://streeteasy.com/for-rent/manhattan")
     time.sleep(3)
-    print('loaded streeteasy')
     links = await tab.select_all('a.listingCard-globalLink')
     link = links[0]
     print(link.attrs['href']) #url...
@@ -105,11 +108,12 @@ async def main():
         tab = await driver.get('about:blank', new_tab=True) 
 
         await monitor.listen(tab)
+        print('finished listening to the requests ig')
+        print(monitor.requests, 'requests arr')
 
         listing_tab = await tab.get(link.attrs['href'], new_tab=False)
         await listing_tab.sleep(3)
         text = await listing_tab.select_all('div.Flickity-count.jsFlickityCount')
-        print(text)
         num_pics_arr = re.findall(r'\d+', text[0].text_all)
         if len(num_pics_arr) > 0:
             num_of_pics = int(num_pics_arr[1])
@@ -120,12 +124,11 @@ async def main():
         # print(button)
         
         all_image_res = []
-        print('"listing page" => clicking through pics')
         for i in range(1, num_of_pics):
             await button[0].click()
             randomInt = random.randint(3, 5)
             await listing_tab.sleep(randomInt)
-            # pics = await monitor.receive(listing_tab)
+            pics = await monitor.receive(listing_tab)
             # all_image_res += pics
             print('just recieved the network requests for one button click...', i)
 
