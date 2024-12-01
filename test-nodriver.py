@@ -31,7 +31,7 @@ class RequestMonitor:
         async def handler(evt: cdp.network.ResponseReceived):
             async with self.lock:
                 if evt.response.url.endswith('800_400.webp'):
-                    print(evt.response.url, 'oh' )
+                    print(evt.response.url, 'oh' ) #so this, mostly has what we want??
                     self.requests.append([evt.response.url, evt.request_id])
                     self.last_request = time.time()
                     self.imgs_to_save.append(evt.response.url)
@@ -46,6 +46,7 @@ class RequestMonitor:
         responses: list[ResponseType] = []
         retries = 0
         max_retries = 5
+        print(uc.Tab, 'tab...')
 
         # Wait at least 2 seconds after the last IMGAGE  request to get some more
         while True:
@@ -107,7 +108,8 @@ async def main():
 
         tab = await driver.get('about:blank', new_tab=True) 
 
-        await monitor.listen(tab)
+        print('about to listen to requests in the')
+        # await monitor.listen(tab)
         print('finished listening to the requests ig')
         print(monitor.requests, 'requests arr')
 
@@ -127,7 +129,10 @@ async def main():
         for i in range(1, num_of_pics):
             await button[0].click()
             randomInt = random.randint(3, 5)
+            print('listening...')
+            await monitor.listen(listing_tab)
             await listing_tab.sleep(randomInt)
+            print('receiving...')
             pics = await monitor.receive(listing_tab)
             # all_image_res += pics
             print('just recieved the network requests for one button click...', i)
