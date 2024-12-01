@@ -31,7 +31,7 @@ class RequestMonitor:
         async def handler(evt: cdp.network.ResponseReceived):
             async with self.lock:
                 if evt.response.url.endswith('800_400.webp'):
-                    print(evt.response.url, 'oh' ) #so this, mostly has what we want??
+                    # print(evt.response.url, 'oh' ) #so this, mostly has what we want??
                     self.requests.append([evt.response.url, evt.request_id])
                     self.last_request = time.time()
                     self.imgs_to_save.append(evt.response.url)
@@ -46,7 +46,6 @@ class RequestMonitor:
         responses: list[ResponseType] = []
         retries = 0
         max_retries = 5
-        print(uc.Tab, 'tab...')
 
         # Wait at least 2 seconds after the last IMGAGE  request to get some more
         while True:
@@ -65,7 +64,7 @@ class RequestMonitor:
         # Loop through gathered requests and get its response body
         async with self.lock:
             print('about to loop through requests...')
-            print(self.requests, 'the request arr')
+            # print(self.requests, 'the request arr')
             for request in self.requests:
                 try:
                     if not isinstance(request[1], cdp.network.RequestId):
@@ -74,12 +73,8 @@ class RequestMonitor:
                     res = await page.send(cdp.network.get_response_body(request[1]))
                     if res is None:
                         continue
-                    #need to edit this to make sure to only get 800 400 pics
                     #also need to ensure that we wait enough time for them to load...or filter correctly for them...
-                    # print(request, 'all the requests??')
-                    # print(res, 'the res?')
                     if request[0].endswith('800_400.webp'): 
-                        print('appending...', request[0])
                         responses.append({
                             'url': request[0],
                             'body': res[0],  # Assuming res[0] is the response body
@@ -111,10 +106,13 @@ async def main():
         print('about to listen to requests in the')
         # await monitor.listen(tab)
         print('finished listening to the requests ig')
-        print(monitor.requests, 'requests arr')
+        # print(monitor.requests, 'requests arr')
 
         listing_tab = await tab.get(link.attrs['href'], new_tab=False)
         await listing_tab.sleep(3)
+
+        print('starting to listen...')
+        await monitor.listen(listing_tab)
         text = await listing_tab.select_all('div.Flickity-count.jsFlickityCount')
         num_pics_arr = re.findall(r'\d+', text[0].text_all)
         if len(num_pics_arr) > 0:
@@ -129,44 +127,60 @@ async def main():
         for i in range(1, num_of_pics):
             await button[0].click()
             randomInt = random.randint(3, 5)
-            print('listening...')
-            await monitor.listen(listing_tab)
             await listing_tab.sleep(randomInt)
             print('receiving...')
             pics = await monitor.receive(listing_tab)
-            # all_image_res += pics
             print('just recieved the network requests for one button click...', i)
 
         # Print URL and response body
-        # for response in image_responses:
-        #     print(f"URL: {response['url']}")
-        #     print('Response Body:')
-        #     print(response['body'] if not response['is_base64'] else 'Base64 encoded data')
 
         os.makedirs('listing_images', exist_ok=True)
-        
-        print(monitor.imgs_to_save)
-        
-        for i, url in enumerate(monitor.imgs_to_save):
+        #this works more or less,,, stops making requests twice, grabs correct sized imgs, but misses the first one??
+        # #and last one sometimes (the floorplan doesn't have a 800_400 in the img string...)
+        for i, response in enumerate(pics):
             try:
+                print(f"URL: {response['url']}")
+                print('Response Body:')
+                print(response['body'] if not response['is_base64'] else 'Base64 encoded data')
+                url = response['url']
+                body = response['body']
+                is_base64 = response['is_base64']
+                print(url, 'print some info', is_base64)
+
                 # Determine the file extension (default to .webp if not present in URL)
-                file_extension = os.path.splitext(url)[-1]
-                if not file_extension:
-                    file_extension = '.webp'
-        
+                file_extension = os.path.splitext(url)[-1] or '.webp'
                 filename = f"image_{i + 1}{file_extension}"
                 file_path = os.path.join('listing_images', filename)
 
-                # Fetch the image content from the URL
-                response = requests.get(url, stream=True)
-                response.raise_for_status()  # Raise an exception for HTTP errors
+                if is_base64:
+                    # # Decode Base64 data and save as image
+                    image_data = base64.b64decode(body)
+                    with open(file_path, 'wb') as f:
+                        f.write(image_data)
+                    print(f"Saved base64 image to {file_path}")
 
-                # Save the image content to the file
-                with open(file_path, 'wb') as f:
-                    for chunk in response.iter_content(chunk_size=8192):
-                        f.write(chunk)
+        # print(monitor.imgs_to_save)
+        
+        # for i, url in enumerate(monitor.imgs_to_save):
+        #     try:
+        #         # Determine the file extension (default to .webp if not present in URL)
+        #         file_extension = os.path.splitext(url)[-1]
+        #         if not file_extension:
+        #             file_extension = '.webp'
+        
+        #         filename = f"image_{i + 1}{file_extension}"
+        #         file_path = os.path.join('listing_images', filename)
 
-                print(f"Saved image to {file_path}")
+        #         # Fetch the image content from the URL
+        #         response = requests.get(url, stream=True)
+        #         response.raise_for_status()  # Raise an exception for HTTP errors
+
+        #         # Save the image content to the file
+        #         with open(file_path, 'wb') as f:
+        #             for chunk in response.iter_content(chunk_size=8192):
+        #                 f.write(chunk)
+
+        #         print(f"Saved image to {file_path}")
 
             except Exception as e:
                 print(f"Failed to save image from URL {url}: {e}")
