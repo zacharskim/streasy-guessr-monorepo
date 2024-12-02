@@ -30,19 +30,14 @@ class RequestMonitor:
     async def listen(self, page: uc.Tab):
         async def handler(evt: cdp.network.ResponseReceived):
             async with self.lock:
-                if evt.response.url.endswith('800_400.webp'):
-                    # print(evt.response.url, 'oh' ) #so this, mostly has what we want??
+                if evt.response.url.endswith('800_400.webp'): # UPDATE THIS LINE
                     self.requests.append([evt.response.url, evt.request_id])
                     self.last_request = time.time()
                     self.imgs_to_save.append(evt.response.url)
-                # if evt.response.encoded_data_length > 0 and evt.type_ is cdp.network.ResourceType.IMAGE:
-                #     self.requests.append([evt.response.url, evt.request_id])
-                #     self.last_request = time.time()
 
         page.add_handler(cdp.network.ResponseReceived, handler)
 
     async def receive(self, page: uc.Tab):
-        #need to walk through this function more i feel...
         responses: list[ResponseType] = []
         retries = 0
         max_retries = 5
@@ -63,8 +58,6 @@ class RequestMonitor:
 
         # Loop through gathered requests and get its response body
         async with self.lock:
-            print('about to loop through requests...')
-            # print(self.requests, 'the request arr')
             for request in self.requests:
                 try:
                     if not isinstance(request[1], cdp.network.RequestId):
@@ -74,7 +67,7 @@ class RequestMonitor:
                     if res is None:
                         continue
                     #also need to ensure that we wait enough time for them to load...or filter correctly for them...
-                    if request[0].endswith('800_400.webp'): 
+                    if request[0].endswith('800_400.webp'): #this seems like a un-needed double check?? 
                         responses.append({
                             'url': request[0],
                             'body': res[0],  # Assuming res[0] is the response body
@@ -96,17 +89,12 @@ async def main():
     link = links[0]
     print(link.attrs['href']) #url...
     print(link.attrs['data-map-points']) #string with two ints seperatated by a comma '40.73789978,-73.97299957'
-    # hrefs = [link.get_attributes('href') for link in links if link.get_attributes('href')]
     await tab.sleep(3)
     
     try:
 
         tab = await driver.get('about:blank', new_tab=True) 
 
-        print('about to listen to requests in the')
-        # await monitor.listen(tab)
-        print('finished listening to the requests ig')
-        # print(monitor.requests, 'requests arr')
 
         listing_tab = await tab.get(link.attrs['href'], new_tab=False)
         await listing_tab.sleep(3)
@@ -114,16 +102,15 @@ async def main():
         print('starting to listen...')
         await monitor.listen(listing_tab)
         text = await listing_tab.select_all('div.Flickity-count.jsFlickityCount')
+        #sometimes we don't find the text from the button,,, should we re-try or catch 
+        #this error in a better way?
         num_pics_arr = re.findall(r'\d+', text[0].text_all)
         if len(num_pics_arr) > 0:
             num_of_pics = int(num_pics_arr[1])
 
         
         button = await listing_tab.select_all('button.flickity-button.flickity-prev-next-button.next')
-        print('\n')
-        # print(button)
         
-        all_image_res = []
         for i in range(1, num_of_pics):
             await button[0].click()
             randomInt = random.randint(3, 5)
@@ -159,47 +146,8 @@ async def main():
                         f.write(image_data)
                     print(f"Saved base64 image to {file_path}")
 
-        # print(monitor.imgs_to_save)
-        
-        # for i, url in enumerate(monitor.imgs_to_save):
-        #     try:
-        #         # Determine the file extension (default to .webp if not present in URL)
-        #         file_extension = os.path.splitext(url)[-1]
-        #         if not file_extension:
-        #             file_extension = '.webp'
-        
-        #         filename = f"image_{i + 1}{file_extension}"
-        #         file_path = os.path.join('listing_images', filename)
-
-        #         # Fetch the image content from the URL
-        #         response = requests.get(url, stream=True)
-        #         response.raise_for_status()  # Raise an exception for HTTP errors
-
-        #         # Save the image content to the file
-        #         with open(file_path, 'wb') as f:
-        #             for chunk in response.iter_content(chunk_size=8192):
-        #                 f.write(chunk)
-
-        #         print(f"Saved image to {file_path}")
-
             except Exception as e:
                 print(f"Failed to save image from URL {url}: {e}")
-                # url = response['url']
-                # body = response['body']
-                # is_base64 = response['is_base64']
-                # print(url, 'print some info', is_base64)
-
-                # Determine the file extension (default to .webp if not present in URL)
-                # file_extension = os.path.splitext(url)[-1] or '.webp'
-                # filename = f"image_{i + 1}{file_extension}"
-                # file_path = os.path.join('listing_images', filename)
-
-                # if is_base64:
-                # # Decode Base64 data and save as image
-                #     image_data = base64.b64decode(body)
-                #     with open(file_path, 'wb') as f:
-                #         f.write(image_data)
-                #     print(f"Saved base64 image to {file_path}")
         
     except Exception as e:
         print(f"Well, something went wrong....{e}")
@@ -212,3 +160,5 @@ if __name__ == '__main__':
 
 #eventually, this script should run daily or so for each borough (well maybe not statent island) with 
 #restrictions on prices as well...then update our db,,, i think like 200-300 apartments is solid? maybe only like 100 though...
+
+#ok goal for this working session: get it working so that it grabs first pic, and the floor plan if needed??
