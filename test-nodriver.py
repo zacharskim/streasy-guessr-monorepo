@@ -99,7 +99,8 @@ async def main():
 
         tab = await driver.get('about:blank', new_tab=True) 
 
-        await monitor.listen(tab)
+
+       
 
         listing_tab = await tab.get(link.attrs['href'], new_tab=False)
         await listing_tab.sleep(3)
@@ -111,6 +112,29 @@ async def main():
         num_pics_arr = re.findall(r'\d+', text[0].text_all)
         if len(num_pics_arr) > 0:
             num_of_pics = int(num_pics_arr[1])
+            print(num_of_pics,'huh')
+
+        
+        await monitor.listen(tab) #moved down here so we purposely don't get the noisy initial misc images + first one
+        #scrape the first one below...
+
+
+        os.makedirs('listing_images', exist_ok=True)
+        visible_images = await listing_tab.select_all('img.Flickity-image.jsFlickityImage.flickity-lazyloaded')
+        # print('visible imgs', visible_images)
+        img_zero_url = ''
+        for img in visible_images:
+            img_zero_url = img.attrs.src #some how need to keep this one? idk...
+            await listing_tab.sleep(3)
+
+        response = requests.get(img_zero_url, stream=True)
+        if response.status_code == 200:
+            with open('listing_images/image_0.webp', 'wb') as file:
+                for chunk in response.iter_content(1024):
+                    file.write(chunk)
+            print(f"Image saved to image_0")
+        else:
+            print(f"Failed to retrieve the image. Status code: {response.status_code}")
 
         
         button = await listing_tab.select_all('button.flickity-button.flickity-prev-next-button.next')
