@@ -30,7 +30,8 @@ class RequestMonitor:
     async def listen(self, page: uc.Tab):
         async def handler(evt: cdp.network.ResponseReceived):
             async with self.lock:
-                if evt.response.url.endswith('800_400.webp'): # UPDATE THIS LINE
+                if (evt.response.url.endswith('.webp') or evt.response.url.endswith('.jpg')) and not evt.response.url.endswith('80_40.webp') and not evt.response.url.endswith('80_40.jpg'): # UPDATE THIS LINE
+                    print(evt.response.url, 'cmooon man...')
                     self.requests.append([evt.response.url, evt.request_id])
                     self.last_request = time.time()
                     self.imgs_to_save.append(evt.response.url)
@@ -67,7 +68,8 @@ class RequestMonitor:
                     if res is None:
                         continue
                     #also need to ensure that we wait enough time for them to load...or filter correctly for them...
-                    if request[0].endswith('800_400.webp'): #this seems like a un-needed double check?? 
+                    if True: #this seems like a un-needed double check?? 
+                        print('huh', request[0])
                         responses.append({
                             'url': request[0],
                             'body': res[0],  # Assuming res[0] is the response body
@@ -76,6 +78,8 @@ class RequestMonitor:
                 except Exception as e:
                     print('Error getting body', e)
 
+
+        print('returning....')
         return responses
 
 
@@ -95,12 +99,12 @@ async def main():
 
         tab = await driver.get('about:blank', new_tab=True) 
 
+        await monitor.listen(tab)
 
         listing_tab = await tab.get(link.attrs['href'], new_tab=False)
         await listing_tab.sleep(3)
 
         print('starting to listen...')
-        await monitor.listen(listing_tab)
         text = await listing_tab.select_all('div.Flickity-count.jsFlickityCount')
         #sometimes we don't find the text from the button,,, should we re-try or catch 
         #this error in a better way?
@@ -113,11 +117,13 @@ async def main():
         
         for i in range(1, num_of_pics):
             await button[0].click()
-            randomInt = random.randint(3, 5)
+            randomInt = random.randint(1, 3)
             await listing_tab.sleep(randomInt)
-            print('receiving...')
-            pics = await monitor.receive(listing_tab)
+            # print('receiving...')
             print('just recieved the network requests for one button click...', i)
+
+        
+        pics = await monitor.receive(listing_tab)
 
         # Print URL and response body
 
