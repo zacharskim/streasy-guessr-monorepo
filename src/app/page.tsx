@@ -47,6 +47,12 @@ export default function LandingPage() {
           >
             About
           </Link>
+          <Link
+            className="text-sm font-medium hover:underline underline-offset-4"
+            href="#"
+          >
+            Login/Signup (replace w some animal icon in the future...)
+          </Link>
           {/* <a will need to go in credits section...
             href="https://www.flaticon.com/free-icons/empire-state-building"
             title="empire state building icons"
@@ -55,7 +61,14 @@ export default function LandingPage() {
           </a> */}
         </nav>
       </header>
-
+      TODO: - main text + calll to action - clean up top nav bar, add in a
+      account photo thing - feature section with a previw or cards or something
+      - second call to action-ish text + second button - how to play should just
+      send u down to the relevant second w a nice animation - Leaderboard should
+      be a new page - about should be removed and repalce with the account, sign
+      up or something? idk... - hitting play now button should check to see if
+      they want an account, if they do let them sign up...or request to just
+      play as a guest
       <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
         <p className="text-xs text-gray-500 dark:text-gray-400">
           © 2024 GlobeQuest. All rights reserved.

@@ -46,3 +46,18 @@ determine way to filter the images so there are no 'duds'
 should the user get dropped to street view? or is that too easy given like the manhattan grid,,, maybe they just don't get to move around? and then they can toggle into the images maybe??
 
 how would this look on mobile?? future branch perhaps...
+
+Headline:
+Think You Know NYC Apartments? Prove It!
+
+Subheadline:
+Welcome to Streasy Guessr—the ultimate challenge for real estate aficionados, city explorers, and trivia fans alike. Guess the neighborhood, price, and more of iconic NYC apartments. How close can you get?
+
+Call-to-Action Button:
+Play Now – It’s Free!
+
+Features Section:
+
+Guess the Neighborhood: Can you tell a West Village loft from a Queens studio?
+Price Challenge: Spot the six-figure steals and the sky-high penthouses.
+Extra Twists: Match features like square footage, building era, or rental status.
