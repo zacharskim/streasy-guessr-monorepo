@@ -68,7 +68,8 @@ export default function LandingPage() {
       be a new page - about should be removed and repalce with the account, sign
       up or something? idk... - hitting play now button should check to see if
       they want an account, if they do let them sign up...or request to just
-      play as a guest
+      play as a guest - actually new idea, no account just leaderboard
+      'claiming' like an arcade game
       <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
         <p className="text-xs text-gray-500 dark:text-gray-400">
           © 2024 GlobeQuest. All rights reserved.
