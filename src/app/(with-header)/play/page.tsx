@@ -44,17 +44,28 @@ export default function PlayPage() {
         <CarouselNext />
       </Carousel>
 
-      <div className="flex items-center gap-2 mb-4">
-        <Slider min={500} max={10000} step={50} value={[guess]} onValueChange={(val) => setGuess(val[0])} />
+      <div className="flex flex-col items-center gap-4 w-full max-w-sm">
+        <Slider
+          min={500}
+          max={10000}
+          step={50}
+          value={[guess]}
+          onValueChange={(val) => setGuess(val[0])}
+          className="w-full"
+        />
+
         <input
           type="number"
           value={guess}
           onChange={(e) => setGuess(Number(e.target.value))}
-          className="w-24 border rounded px-2 py-1 text-center"
+          className="w-32 border rounded px-2 py-1 text-center"
         />
       </div>
 
-      <button onClick={() => setSubmitted(true)} className="bg-black text-white px-6 py-2 rounded hover:opacity-90">
+      <button
+        onClick={() => setSubmitted(true)}
+        className="bg-black text-white px-6 py-2 mt-4 rounded hover:opacity-90"
+      >
         Submit Guess
       </button>
 
