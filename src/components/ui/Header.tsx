@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { InfoMenu } from "./InfoMenu";
 import BuildingIcon from "@/app/building.png"; // adjust path if needed
 
 export default function Header() {
@@ -11,12 +12,16 @@ export default function Header() {
       </Link>
 
       <nav className="flex gap-4 text-sm uppercase">
+        <Link href="/play" className="ml-auto bg-black text-white px-3 py-1 rounded hover:opacity-90 text-xs">
+          New Game
+        </Link>
+        <Link href="/catalog" className="hover:underline">
+          Catalog
+        </Link>
         <Link href="/leaderboard" className="hover:underline">
           Leaderboard
         </Link>
-        <Link href="/privacy" className="hover:underline">
-          More Info
-        </Link>
+        <InfoMenu />
       </nav>
     </header>
   );
