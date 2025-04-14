@@ -47,6 +47,10 @@ should the user get dropped to street view? or is that too easy given like the m
 
 how would this look on mobile?? future branch perhaps...
 
+
+
+Copy for the landing page:
+
 Headline:
 Think You Know NYC Apartments? Prove It!
 
@@ -61,3 +65,6 @@ Features Section:
 Guess the Neighborhood: Can you tell a West Village loft from a Queens studio?
 Price Challenge: Spot the six-figure steals and the sky-high penthouses.
 Extra Twists: Match features like square footage, building era, or rental status.
+
+
+users will try to guess: location
