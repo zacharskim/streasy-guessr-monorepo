@@ -1,0 +1,20 @@
+@keyframes float {
+  0% {
+    transform: translate(0px, 0px) rotate(0deg);
+  }
+  50% {
+    transform: translate(var(--x, 1px), var(--y, -1px)) rotate(var(--r, 2deg));
+  }
+  100% {
+    transform: translate(0px, 0px) rotate(0deg);
+  }
+}
+
+.jumble-letter {
+  color: transparent;
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+  animation: float 1.6s infinite ease-in-out;
+  --x: calc((var(--randX, 1) - 0.5) * 4px);
+  --y: calc((var(--randY, 1) - 0.5) * 4px);
+  --r: calc((var(--randR, 1) - 0.5) * 10deg);
+}

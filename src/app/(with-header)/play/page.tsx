@@ -21,29 +21,48 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Slider } from "@/components/ui/slider";
 import { useState } from "react";
 import Image from "next/image";
+import InvisibleInk from "@/components/ui/Ink";
 
-const images = ["/app1.webp", "/app2.webp", "/app3.webp", "/app4.webp", "/app5.webp"];
+const images = ["/app1.webp", "/app2.webp", "/app4.webp", "/app5.webp"];
 
 export default function PlayPage() {
   const [guess, setGuess] = useState(3000);
   const [submitted, setSubmitted] = useState(false);
+  const round = 3;
+  const totalRounds = 5;
+  const score = 500;
 
   return (
     <main className="flex flex-col items-center justify-center p-4 max-w-xl mx-auto">
-      <h1 className="text-3xl font-bold mb-4">Guess the Rent</h1>
+      <div className="w-full px-4 py-2 border-b bg-white shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div className="flex items-center justify-center gap-4 text-sm">
+          <span>
+            Round {round} / {totalRounds}
+          </span>
+          <span>Score: {score}</span>
+        </div>
 
+        <div className="w-full sm:w-[200px] h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div className="bg-blue-500 h-full transition-all" style={{ width: `${(round / totalRounds) * 100}%` }} />
+        </div>
+      </div>
       <Carousel className="w-full max-w-sm mb-6">
         <CarouselContent>
           {images.map((src, index) => (
             <CarouselItem key={index}>
-              <Image src={src} alt={`Apartment ${index + 1}`} width={400} height={300} className="rounded-md" />
+              <div className="w-full aspect-[4/3] relative">
+                <Image src={src} alt={`Apartment ${index + 1}`} fill className="object-cover rounded-md" />
+              </div>
             </CarouselItem>
           ))}
         </CarouselContent>
         <CarouselPrevious />
         <CarouselNext />
       </Carousel>
-
+      <br />
+      <br />
+      <InvisibleInk>2 Bed / 1 Bath</InvisibleInk>
+      <br />
       <div className="flex flex-col items-center gap-4 w-full max-w-sm">
         <Slider
           min={500}
@@ -61,14 +80,12 @@ export default function PlayPage() {
           className="w-32 border rounded px-2 py-1 text-center"
         />
       </div>
-
       <button
         onClick={() => setSubmitted(true)}
         className="bg-black text-white px-6 py-2 mt-4 rounded hover:opacity-90"
       >
         Submit Guess
       </button>
-
       {submitted && (
         <div className="mt-6 text-center">
           <p className="text-lg">
