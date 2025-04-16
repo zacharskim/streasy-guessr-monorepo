@@ -4,25 +4,40 @@ import {
   DropdownMenuContent,
   DropdownMenuItem
 } from "@/components/ui/dropdown-menu";
-
-import Link from "next/link";
+import { InfoDialog } from "./InfoDialog";
 
 export function InfoMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="uppercase text-sm hover:underline">Info</DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem asChild>
-          <Link href="/how-to-play">How to Play</Link>
+      <DropdownMenuContent align="end" className="flex flex-col gap-2 ">
+        <DropdownMenuItem>
+          <InfoDialog
+            triggerText="How to Play"
+            title="How to Play"
+            content="This is where you explain how to play the game."
+          />
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/about">About</Link>
+        <DropdownMenuItem>
+          <InfoDialog
+            triggerText="About"
+            title="About RentQuest"
+            content="This is a placeholder for the About section."
+          />
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/report-bug">Report a Bug</Link>
+        <DropdownMenuItem>
+          <InfoDialog
+            triggerText="Report a Bug"
+            title="Report a Bug"
+            content="Let us know if you encounter any issues!"
+          />
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/feedback">Leave Feedback</Link>
+        <DropdownMenuItem>
+          <InfoDialog
+            triggerText="Leave Feedback"
+            title="Leave Feedback"
+            content="We'd love to hear your thoughts about RentQuest."
+          />
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
