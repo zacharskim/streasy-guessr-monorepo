@@ -11,7 +11,7 @@ export default function Header() {
         <span className="font-bold text-lg">RentQuest</span>
       </Link>
 
-      <nav className="flex gap-4 text-sm uppercase">
+      <nav className="flex gap-4 text-sm uppercase items-center">
         <Link href="/play" className="ml-auto bg-black text-white px-3 py-1 rounded hover:opacity-90 text-xs">
           New Game
         </Link>
