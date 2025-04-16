@@ -1,6 +1,7 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
+import { useState } from "react";
 
 interface InfoDialogProps {
   title: string;
@@ -13,7 +14,9 @@ export function InfoDialog({ title, content, triggerText }: InfoDialogProps) {
     <Dialog.Root>
       <Dialog.Trigger
         className="text-sm hover:underline text-left"
-        onClick={(e) => e.stopPropagation()} // Prevent parent onClick from firing
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
       >
         {triggerText}
       </Dialog.Trigger>
