@@ -22,6 +22,7 @@ import { Slider } from "@/components/ui/slider";
 import { useState } from "react";
 import Image from "next/image";
 import InvisibleInk from "@/components/ui/Ink";
+import AnimatedRentInput from "@/components/ui/RentInput";
 
 const images = ["/app1.webp", "/app2.webp", "/app4.webp", "/app5.webp"];
 
@@ -77,12 +78,14 @@ export default function PlayPage() {
           type="number"
           value={guess}
           onChange={(e) => setGuess(Number(e.target.value))}
-          className="w-32 border rounded px-2 py-1 text-center"
+          className="w-32 border rounded px-2 py-1 text-center bg-white text-black dark:bg-neutral-800 dark:text-white dark:border-neutral-600"
         />
       </div>
+      <br />
+      <AnimatedRentInput />
       <button
         onClick={() => setSubmitted(true)}
-        className="bg-black text-white px-6 py-2 mt-4 rounded hover:opacity-90"
+        className="bg-black text-white px-6 py-2 mt-4 rounded hover:opacity-90 dark:bg-white dark:text-black dark:hover:opacity-80"
       >
         Submit Guess
       </button>
