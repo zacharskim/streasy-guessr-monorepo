@@ -14,7 +14,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "RentQuest",
+  title: "Rent Golf",
   description: "Fun Guessing Game"
 };
 

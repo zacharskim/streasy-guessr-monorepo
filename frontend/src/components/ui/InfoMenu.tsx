@@ -21,7 +21,7 @@ export function InfoMenu() {
         <DropdownMenuItem>
           <InfoDialog
             triggerText="About"
-            title="About RentQuest"
+            title="About Rent Golf"
             content="This is a placeholder for the About section."
           />
         </DropdownMenuItem>
@@ -36,7 +36,7 @@ export function InfoMenu() {
           <InfoDialog
             triggerText="Leave Feedback"
             title="Leave Feedback"
-            content="We'd love to hear your thoughts about RentQuest."
+            content="We'd love to hear your thoughts about Rent Golf."
           />
         </DropdownMenuItem>
       </DropdownMenuContent>

@@ -2,11 +2,11 @@
 
 **Fun Guessing Game Based On NYC Apartment Pictures**
 
-Welcome to Streasy Guessr (RentQuest...tbd), a web application where users guess the neighborhood or price of NYC apartments based on their pictures. Inspired by GeoGuessr, this game tests your knowledge of the city's real estate market.
+Welcome to Rent Golf, a web application where users guess the neighborhood or price of NYC apartments based on their pictures. Inspired by GeoGuessr, this game tests your knowledge of the city's real estate market.
 
 ## Project Structure
 
-This is a monorepo containing both the frontend and backend for Streasy Guessr:
+This is a monorepo containing both the frontend and backend for Rent Golf:
 
 ```
 streasy-guessr-monorepo/

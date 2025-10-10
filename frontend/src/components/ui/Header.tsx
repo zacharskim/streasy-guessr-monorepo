@@ -9,7 +9,7 @@ export default function Header() {
     <header className="px-4 lg:px-6 h-14 flex items-center justify-between border-b">
       <Link href="/" className="flex items-center">
         <Image src={BuildingIcon} alt="Building Icon" width={24} height={24} className="h-6 w-6 mr-2 dark:invert" />
-        <span className="font-bold text-lg">RentQuest</span>
+        <span className="font-bold text-lg">Rent Golf</span>
       </Link>
 
       <nav className="flex gap-4 text-sm uppercase items-center">
