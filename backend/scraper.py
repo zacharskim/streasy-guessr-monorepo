@@ -4,6 +4,7 @@ from nodriver import cdp
 import time
 import typing
 import json
+import random
 
 
 # ResponseType, RequestMonitor classes are adapted from a github issue comment: https://github.com/ultrafunkamsterdam/undetected-chromedriver/issues/1832, modified to get image requests...
@@ -21,7 +22,7 @@ async def scrape_html_fields(page: uc.Tab) -> dict:
     }
 
     try:
-        # Get sqft from property details - look for any p tag containing "ft²"
+        # Get sqft from property details 
         property_details = await page.select_all('[data-testid="propertyDetails"] p')
         for detail in property_details:
             text = detail.text.strip()
@@ -34,7 +35,7 @@ async def scrape_html_fields(page: uc.Tab) -> dict:
                     pass
                 break
 
-        # Get home features - use Body_base class to get only main feature text (excludes captions)
+        # Get home features 
         all_feature_paragraphs = await page.select_all('[data-testid="home-features-section"] li p[class*="Body_base"]')
         print(f'Found {len(all_feature_paragraphs)} feature paragraphs')
 
@@ -166,87 +167,188 @@ class RequestMonitor:
             return self.requests.copy()
 
 
-async def main():
-    driver = await uc.start(headless=False)
+async def scrape_listing(link_element, search_tab, driver) -> dict | None:
+    """Scrape a single listing and return apartment data"""
     monitor = RequestMonitor()
+    listing_tab = None
 
-    tab = await driver.get("https://streeteasy.com/for-rent/manhattan")
-    time.sleep(3)
-    # Updated selector for new StreetEasy HTML structure
-    links = await tab.select_all('a[href*="/building/"][class*="ListingDescription-module__addressTextAction"]')
-
-    link = links[0]
-    print(f'Found {len(links)} listings')
-    print(f'First listing URL: {link.attrs["href"]}')
-    await tab.sleep(3)
-    
     try:
-        print('\n[Step 1] Opening new tab...')
-        tab = await driver.get('about:blank', new_tab=True)
+        link_url = link_element.attrs.get('href', 'unknown')
+        print(f'\n{"="*60}')
+        print(f'SCRAPING: {link_url}')
+        print("="*60)
+
+        print('[Step 1] Clicking link to open listing in new tab...')
+        # Click the link - this opens in a NEW tab
+        await link_element.click()
+
+        # Wait for new tab to open
+        await asyncio.sleep(4)
+
+        # Get the new listing tab (last opened tab)
+        listing_tab = driver.tabs[-1]
 
         print('[Step 2] Setting up request monitor...')
-        await monitor.listen(tab)
+        await monitor.listen(listing_tab)
 
-        print(f'[Step 3] Navigating to listing: {link.attrs["href"]}')
-        listing_tab = await tab.get(link.attrs['href'], new_tab=False)
-
-        print('[Step 4] Waiting for page to fully load...')
+        print('[Step 3] Waiting for page to fully load...')
         await listing_tab.sleep(5)
 
-        print('[Step 5] Looking for next button...')
+        print('[Step 4] Looking for next button...')
         next_button = await listing_tab.select('button[data-testid="next-image-button"]')
 
-        if next_button:
-            print('[Step 6] Found next button!')
-
-            print('[Step 7] Starting request monitoring...')
-            await monitor.start_monitoring()
-
-            print('[Step 8] Clicking the button...')
-            await next_button.click()
-
-            print('[Step 9] Collecting captured payloads (will wait for requests)...')
-            payloads = await monitor.receive()
-            print(f'\n✓ Successfully captured {len(payloads)} request payloads\n')
-
-            # Scrape HTML fields (sqft and home features)
-            print('[Step 11] Scraping sqft and home features from HTML...')
-            html_data = await scrape_html_fields(listing_tab)
-            print(f'✓ Scraped sqft: {html_data.get("sqft")}, features: {len(html_data.get("home_features", []))}')
-
-            # Extract apartment data from payloads
-            apartment_data = None
-            current_url = link.attrs['href']  # Get the URL we navigated to
-
-            for i, payload_data in enumerate(payloads):
-                print(f"\n--- Payload {i+1} ---")
-                print(f"URL: {payload_data['url']}")
-
-                # Try to extract apartment data, passing the listing URL and HTML data
-                extracted = extract_apartment_data(payload_data['payload'], current_url, html_data)
-                if extracted and extracted.get('listing_id'):
-                    print("✓ Successfully extracted apartment data!")
-                    apartment_data = extracted
-                else:
-                    print("✗ No apartment data found in this payload")
-                print()
-
-            # Print the final apartment data
-            if apartment_data:
-                print("\n" + "="*50)
-                print("EXTRACTED APARTMENT DATA")
-                print("="*50)
-                print(json.dumps(apartment_data, indent=2))
-            else:
-                print("\n✗ Could not extract apartment data from any payload")
-        else:
+        if not next_button:
             print('✗ Could not find next button')
-        
-    except Exception as e:
-        print(f"Well, something went wrong....{e}")
+            return None
 
-    print("Stopping without errors")
-    driver.stop()
+        print('[Step 5] Found next button!')
+        print('[Step 6] Starting request monitoring...')
+        await monitor.start_monitoring()
+
+        print('[Step 7] Clicking the button...')
+        await next_button.click()
+
+        print('[Step 8] Collecting captured payloads (will wait for requests)...')
+        payloads = await monitor.receive()
+        print(f'✓ Successfully captured {len(payloads)} request payloads')
+
+        # Scrape HTML fields (sqft and home features)
+        print('[Step 9] Scraping sqft and home features from HTML...')
+        html_data = await scrape_html_fields(listing_tab)
+        print(f'✓ Scraped sqft: {html_data.get("sqft")}, features: {len(html_data.get("home_features", []))}')
+
+        # Extract apartment data from payloads
+        apartment_data = None
+        for i, payload_data in enumerate(payloads):
+            extracted = extract_apartment_data(payload_data['payload'], link_url, html_data)
+            if extracted and extracted.get('listing_id'):
+                apartment_data = extracted
+                break
+
+        if apartment_data:
+            print("✓ Successfully extracted apartment data!")
+        else:
+            print("✗ Could not extract apartment data from any payload")
+
+        return apartment_data
+
+    except Exception as e:
+        print(f"✗ Error scraping listing: {e}")
+        return None
+
+    finally:
+        # Always close the listing tab and return to search tab
+        if listing_tab:
+            try:
+                print('[Step 10] Closing listing tab...')
+                await listing_tab.close()
+                await asyncio.sleep(1)
+            except Exception as e:
+                print(f'Warning: Could not close tab: {e}')
+
+
+async def main():
+    locations = ['manhattan']  
+    max_listings_per_borough = 5  
+    all_apartments = []
+
+    driver = await uc.start(headless=False)
+
+    try:
+        for borough in locations:
+            print(f'\n\n{"#"*60}')
+            print(f'BOROUGH: {borough.upper()}')
+            print("#"*60)
+
+            scraped_count = 0
+            page = 1
+
+            # Loop through pages until we hit our limit
+            while scraped_count < max_listings_per_borough:
+                # Navigate to borough listings page
+                url = f"https://streeteasy.com/for-rent/{borough}?page={page}"
+                print(f'\nNavigating to page {page}: {url}')
+                tab = await driver.get(url)
+                await tab.sleep(3)
+
+                # Get listing links
+                links = await tab.select_all('a[href*="/building/"][class*="ListingDescription-module__addressTextAction"]')
+                print(f'Found {len(links)} listings on page {page}')
+
+                # If no links found, we've reached the end
+                if not links:
+                    print(f'No more listings found for {borough}')
+                    break
+
+                # Track how many we attempt from this page
+                attempts_on_page = 0
+
+                # Scrape listings from this page
+                for link in links:
+                    if scraped_count >= max_listings_per_borough:
+                        break
+
+                    # Limit attempts per page to avoid infinite loops
+                    if attempts_on_page >= len(links):
+                        break
+
+                    attempts_on_page += 1
+
+                    # Check that link has href
+                    if not link.attrs.get('href'):
+                        continue
+
+                    # Random delay before clicking (makes first click less instant)
+                    pre_click_delay = random.uniform(2, 5)
+                    print(f'\nAttempt #{attempts_on_page} on this page')
+                    print(f'Waiting {pre_click_delay:.1f}s before clicking link...')
+                    await asyncio.sleep(pre_click_delay)
+
+                    apartment_data = await scrape_listing(link, tab, driver)
+
+                    # Tab is closed automatically in scrape_listing, search tab still active
+
+                    if apartment_data:
+                        all_apartments.append(apartment_data)
+                        scraped_count += 1
+                        print(f'\n✓ Progress: {scraped_count}/{max_listings_per_borough} listings scraped from {borough}')
+
+                    # Delay between listings to avoid rate limiting
+                    # Random delay between 5-12 seconds to be safer
+                    delay = random.uniform(5, 12)
+                    print(f'Waiting {delay:.1f}s before next listing...')
+                    await asyncio.sleep(delay)
+
+                # Move to next page
+                page += 1
+
+                # Add longer delay between pages
+                if scraped_count < max_listings_per_borough:
+                    page_delay = random.uniform(10, 20)
+                    print(f'\nWaiting {page_delay:.1f}s before loading next page...')
+                    await asyncio.sleep(page_delay)
+
+        # Print summary
+        print(f'\n\n{"="*60}')
+        print(f'SCRAPING COMPLETE')
+        print("="*60)
+        print(f'Total apartments scraped: {len(all_apartments)}')
+
+        # Save to JSON file
+        output_file = 'scraped_apartments.json'
+        with open(output_file, 'w') as f:
+            json.dump(all_apartments, f, indent=2)
+        print(f'\n✓ Data saved to {output_file}')
+
+        print(f'\nAll apartment data:')
+        print(json.dumps(all_apartments, indent=2))
+
+    except Exception as e:
+        print(f"Error in main: {e}")
+
+    finally:
+        print("\nStopping driver...")
+        driver.stop()
 
 if __name__ == '__main__':
     uc.loop().run_until_complete(main())
