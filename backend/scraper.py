@@ -249,10 +249,10 @@ async def scrape_listing(link_element, search_tab, driver) -> dict | None:
 
 async def main():
     locations = ['manhattan']  
-    max_listings_per_borough = 5  
+    max_listings_per_borough = 3  
     all_apartments = []
 
-    driver = await uc.start(headless=False)
+    driver = await uc.start(headless=False, sandbox=False)
 
     try:
         for borough in locations:
@@ -299,7 +299,7 @@ async def main():
                         continue
 
                     # Random delay before clicking (makes first click less instant)
-                    pre_click_delay = random.uniform(2, 5)
+                    pre_click_delay = random.uniform(5, 9)
                     print(f'\nAttempt #{attempts_on_page} on this page')
                     print(f'Waiting {pre_click_delay:.1f}s before clicking link...')
                     await asyncio.sleep(pre_click_delay)
