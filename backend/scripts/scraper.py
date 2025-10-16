@@ -188,6 +188,24 @@ async def scrape_listing(link_element, search_tab, driver) -> dict | None:
         # Get the new listing tab (last opened tab)
         listing_tab = driver.tabs[-1]
 
+        # Check for blocking indicators
+        print('[Step 1.5] Checking for blocking indicators...')
+        page_title = await listing_tab.get_content()
+        # print("PAGE TITLE:", page_title)
+        # print('captcha' in page_title.lower())
+        # if 'captcha' in page_title.lower() or 'access denied' in page_title.lower():
+        #     print('✗ BLOCKED: Captcha or access denied page detected!')
+        #     await listing_tab.save_screenshot('blocking_detected.png')
+        #     return None
+
+        # Check the actual URL we landed on
+        current_url = listing_tab.target.url
+        print(f'    Landed on URL: {current_url}')
+        if current_url != link_url and 'streeteasy.com' not in current_url:
+            print(f'✗ BLOCKED: Redirected to unexpected domain: {current_url}')
+            await listing_tab.save_screenshot('unexpected_redirect.png')
+            return None
+
         print('[Step 2] Setting up request monitor...')
         await monitor.listen(listing_tab)
 
@@ -198,7 +216,21 @@ async def scrape_listing(link_element, search_tab, driver) -> dict | None:
         next_button = await listing_tab.select('button[data-testid="next-image-button"]')
 
         if not next_button:
-            print('✗ Could not find next button')
+            print('✗ Could not find next button - checking page state...')
+            # Save screenshot to debug why button wasn't found
+            try:
+                await listing_tab.save_screenshot(f'no_button_{int(time.time())}.png')
+                print(f'    Screenshot saved for debugging')
+            except:
+                pass
+
+            # Check if page has expected content
+            page_html = await listing_tab.get_content()
+            if 'listing' not in page_html.lower():
+                print('✗ Page does not appear to be a listing page!')
+            else:
+                print('    Page looks like a listing but button not found')
+
             return None
 
         print('[Step 5] Found next button!')
@@ -229,11 +261,20 @@ async def scrape_listing(link_element, search_tab, driver) -> dict | None:
             print("✓ Successfully extracted apartment data!")
         else:
             print("✗ Could not extract apartment data from any payload")
+            print(f"✗ FAILURE REASON: No valid payload data captured (got {len(payloads)} payloads)")
 
         return apartment_data
 
     except Exception as e:
         print(f"✗ Error scraping listing: {e}")
+        print(f"✗ FAILURE REASON: Exception - {type(e).__name__}: {str(e)}")
+        # Try to save screenshot on exception
+        if listing_tab:
+            try:
+                await listing_tab.save_screenshot(f'exception_{int(time.time())}.png')
+                print(f'    Exception screenshot saved')
+            except:
+                pass
         return None
 
     finally:
@@ -248,9 +289,11 @@ async def scrape_listing(link_element, search_tab, driver) -> dict | None:
 
 
 async def main():
-    locations = ['manhattan']  
-    max_listings_per_borough = 3  
+    locations = ['manhattan', 'brooklyn', 'queens', 'bronx']
+    max_listings_per_borough = 125  # 125 * 4 boroughs = 500 listings
     all_apartments = []
+    consecutive_failures = 0  # Track consecutive failures to detect blocking
+    max_consecutive_failures = 3  # Stop if we fail 3 times in a row
 
     driver = await uc.start(headless=False, sandbox=False)
 
@@ -275,9 +318,16 @@ async def main():
                 links = await tab.select_all('a[href*="/building/"][class*="ListingDescription-module__addressTextAction"]')
                 print(f'Found {len(links)} listings on page {page}')
 
-                # If no links found, we've reached the end
+                # If no links found, we've reached the end OR we might be blocked
                 if not links:
-                    print(f'No more listings found for {borough}')
+                    print(f'WARNING: No listings found on page {page} for {borough}')
+                    print(f'This could mean: (1) End of results, or (2) We are being blocked/rate-limited')
+                    consecutive_failures += 1
+                    if consecutive_failures >= max_consecutive_failures:
+                        print(f'\nSTOPPING: {consecutive_failures} consecutive failures detected - likely blocked!')
+                        print(f'Saving {len(all_apartments)} apartments scraped so far...')
+                        break
+                    print(f'Trying next borough to be safe...')
                     break
 
                 # Track how many we attempt from this page
@@ -299,7 +349,7 @@ async def main():
                         continue
 
                     # Random delay before clicking (makes first click less instant)
-                    pre_click_delay = random.uniform(5, 9)
+                    pre_click_delay = random.uniform(7, 12)
                     print(f'\nAttempt #{attempts_on_page} on this page')
                     print(f'Waiting {pre_click_delay:.1f}s before clicking link...')
                     await asyncio.sleep(pre_click_delay)
@@ -311,22 +361,50 @@ async def main():
                     if apartment_data:
                         all_apartments.append(apartment_data)
                         scraped_count += 1
+                        consecutive_failures = 0  # Reset on success
                         print(f'\n✓ Progress: {scraped_count}/{max_listings_per_borough} listings scraped from {borough}')
+                        print(f'✓ SUCCESS TOTAL: {len(all_apartments)} apartments scraped overall')
+
+                        # Save progress after each successful scrape
+                        with open('scraped_apartments.json', 'w') as f:
+                            json.dump(all_apartments, f, indent=2)
+                    else:
+                        consecutive_failures += 1
+                        print(f'\n✗ FAILURE #{consecutive_failures} (limit: {max_consecutive_failures})')
+                        print(f'    Total scraped so far: {len(all_apartments)} apartments')
+                        print(f'    Recent failures: {consecutive_failures} in a row')
+
+                        if consecutive_failures >= max_consecutive_failures:
+                            print(f'\n{"!"*60}')
+                            print(f'STOPPING: Too many consecutive failures - likely blocked!')
+                            print(f'Saving {len(all_apartments)} apartments scraped so far...')
+                            print(f'{"!"*60}')
+                            break
 
                     # Delay between listings to avoid rate limiting
-                    # Random delay between 5-12 seconds to be safer
-                    delay = random.uniform(5, 12)
+                    # Random delay between 8-18 seconds for overnight run
+                    delay = random.uniform(8, 18)
                     print(f'Waiting {delay:.1f}s before next listing...')
                     await asyncio.sleep(delay)
 
                 # Move to next page
                 page += 1
 
+                # Check if we should stop due to consecutive failures
+                if consecutive_failures >= max_consecutive_failures:
+                    print(f'Breaking out of page loop due to failures')
+                    break
+
                 # Add longer delay between pages
                 if scraped_count < max_listings_per_borough:
-                    page_delay = random.uniform(10, 20)
+                    page_delay = random.uniform(15, 30)
                     print(f'\nWaiting {page_delay:.1f}s before loading next page...')
                     await asyncio.sleep(page_delay)
+
+            # Check if we should stop entirely
+            if consecutive_failures >= max_consecutive_failures:
+                print(f'Breaking out of borough loop due to failures')
+                break
 
         # Print summary
         print(f'\n\n{"="*60}')
