@@ -26,3 +26,20 @@ CREATE INDEX IF NOT EXISTS idx_apartments_location ON apartments(neighborhood, b
 
 -- Index for filtering by bedroom count
 CREATE INDEX IF NOT EXISTS idx_apartments_bedrooms ON apartments(bedrooms);
+
+-- Leaderboard table for high scores
+CREATE TABLE IF NOT EXISTS leaderboard (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    player_name TEXT NOT NULL,
+    location TEXT, -- City, State, or Country (optional)
+    total_score INTEGER NOT NULL,
+    rounds_played INTEGER NOT NULL DEFAULT 5,
+    average_score REAL, -- Calculated: total_score / rounds_played
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Index for leaderboard queries (top scores)
+CREATE INDEX IF NOT EXISTS idx_leaderboard_score ON leaderboard(total_score DESC);
+
+-- Index for filtering by location
+CREATE INDEX IF NOT EXISTS idx_leaderboard_location ON leaderboard(location);

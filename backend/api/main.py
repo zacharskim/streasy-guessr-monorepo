@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 
-from api.routes import apartments
+from api.routes import apartments, leaderboard
 
 app = FastAPI(
     title="Streasy Guessr API",
@@ -23,6 +23,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(apartments.router, prefix="/api", tags=["apartments"])
+app.include_router(leaderboard.router, prefix="/api", tags=["leaderboard"])
 
 # Serve static images
 IMAGES_DIR = Path(__file__).parent.parent / "images"
