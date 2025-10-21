@@ -195,3 +195,5 @@ listing_images/
 *.webp
 !frontend/public/**
 backend/data
+backend/db/*.db
+backend/.claude/
