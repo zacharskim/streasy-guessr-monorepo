@@ -196,4 +196,5 @@ listing_images/
 !frontend/public/**
 backend/data
 backend/db/*.db
+backend/db/apartments.db
 backend/.claude/
