@@ -33,8 +33,8 @@ def import_apartments():
                     listing_url, rent, sqft, bedrooms, bathrooms,
                     neighborhood, borough, address, floor,
                     home_features, amenities, year_built,
-                    photo_count, image_ids
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    photo_count, image_ids, listing_id, property_id
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 apt['listing_url'],
                 apt['rent'],
@@ -49,7 +49,9 @@ def import_apartments():
                 json.dumps(apt.get('amenities', [])),
                 apt.get('year_built'),
                 apt['photo_count'],
-                json.dumps(apt['image_ids'])
+                json.dumps(apt['image_ids']),
+                apt.get('listing_id'),
+                apt.get('property_id')
             ))
             inserted += 1
         except sqlite3.IntegrityError:

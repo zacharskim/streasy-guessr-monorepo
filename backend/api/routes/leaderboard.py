@@ -11,10 +11,11 @@ router = APIRouter()
 
 class LeaderboardEntry(BaseModel):
     """Model for submitting a leaderboard score."""
+
     player_name: str
     location: Optional[str] = None
     total_score: int
-    rounds_played: int = 5
+    rounds_played: int = 3
 
 
 @router.post("/leaderboard")
@@ -34,12 +35,23 @@ def submit_score(entry: LeaderboardEntry):
     cursor = conn.cursor()
 
     # Calculate average score
-    average_score = entry.total_score / entry.rounds_played if entry.rounds_played > 0 else 0
+    average_score = (
+        entry.total_score / entry.rounds_played if entry.rounds_played > 0 else 0
+    )
 
-    cursor.execute("""
+    cursor.execute(
+        """
         INSERT INTO leaderboard (player_name, location, total_score, rounds_played, average_score)
         VALUES (?, ?, ?, ?, ?)
-    """, (entry.player_name, entry.location, entry.total_score, entry.rounds_played, average_score))
+    """,
+        (
+            entry.player_name,
+            entry.location,
+            entry.total_score,
+            entry.rounds_played,
+            average_score,
+        ),
+    )
 
     entry_id = cursor.lastrowid
     conn.commit()
@@ -52,14 +64,14 @@ def submit_score(entry: LeaderboardEntry):
         "total_score": entry.total_score,
         "rounds_played": entry.rounds_played,
         "average_score": round(average_score, 2),
-        "message": "Score submitted successfully!"
+        "message": "Score submitted successfully!",
     }
 
 
 @router.get("/leaderboard")
 def get_leaderboard(
     limit: int = Query(100, ge=1, le=500, description="Number of entries to return"),
-    location: Optional[str] = None
+    location: Optional[str] = None,
 ):
     """
     Get top scores from the leaderboard.
@@ -89,21 +101,25 @@ def get_leaderboard(
 
     entries = []
     for idx, row in enumerate(rows, start=1):
-        entries.append({
-            "rank": idx,
-            "id": row["id"],
-            "player_name": row["player_name"],
-            "location": row["location"],
-            "total_score": row["total_score"],
-            "rounds_played": row["rounds_played"],
-            "average_score": round(row["average_score"], 2) if row["average_score"] else 0,
-            "created_at": row["created_at"]
-        })
+        entries.append(
+            {
+                "rank": idx,
+                "id": row["id"],
+                "player_name": row["player_name"],
+                "location": row["location"],
+                "total_score": row["total_score"],
+                "rounds_played": row["rounds_played"],
+                "average_score": (
+                    round(row["average_score"], 2) if row["average_score"] else 0
+                ),
+                "created_at": row["created_at"],
+            }
+        )
 
     return {
         "leaderboard": entries,
         "total_entries": len(entries),
-        "filtered_by_location": location
+        "filtered_by_location": location,
     }
 
 
@@ -126,15 +142,20 @@ def get_leaderboard_stats():
     avg_score = cursor.fetchone()["avg_score"] or 0
 
     # Top locations (most submissions)
-    cursor.execute("""
+    cursor.execute(
+        """
         SELECT location, COUNT(*) as count
         FROM leaderboard
         WHERE location IS NOT NULL
         GROUP BY location
         ORDER BY count DESC
         LIMIT 10
-    """)
-    top_locations = [{"location": row["location"], "count": row["count"]} for row in cursor.fetchall()]
+    """
+    )
+    top_locations = [
+        {"location": row["location"], "count": row["count"]}
+        for row in cursor.fetchall()
+    ]
 
     conn.close()
 
@@ -142,5 +163,5 @@ def get_leaderboard_stats():
         "total_entries": total,
         "highest_score": max_score,
         "average_score": round(avg_score, 2),
-        "top_locations": top_locations
+        "top_locations": top_locations,
     }

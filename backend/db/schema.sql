@@ -15,6 +15,8 @@ CREATE TABLE IF NOT EXISTS apartments (
     year_built INTEGER,
     photo_count INTEGER NOT NULL,
     image_ids TEXT NOT NULL, -- JSON array stored as text
+    listing_id INTEGER, -- From scraped data
+    property_id INTEGER, -- From scraped data
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
