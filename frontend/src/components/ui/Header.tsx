@@ -1,10 +1,15 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { InfoMenu } from "./InfoMenu";
 import BuildingIcon from "@/app/building.png";
 import { DarkModeToggle } from "./DarkModeToggle";
+import { useGameStore } from "@/stores/gameStore";
 
 export default function Header() {
+  const { resetGame } = useGameStore();
+
   return (
     <header className="px-4 lg:px-6 h-14 flex items-center justify-between border-b dark:border-gray-400">
       <Link href="/" className="flex items-center">
@@ -13,12 +18,12 @@ export default function Header() {
       </Link>
 
       <nav className="flex gap-4 text-sm uppercase items-center">
-        <Link
-          href="/play"
-          className="ml-auto bg-black text-white px-3 py-1 rounded hover:opacity-90 text-xs dark:bg-white dark:text-black dark:hover:opacity-80"
+        <button
+          onClick={() => resetGame()}
+          className="ml-auto bg-black text-white px-3 py-1 rounded hover:opacity-90 text-xs uppercase dark:bg-white dark:text-black dark:hover:opacity-80 border-0 font-normal"
         >
           New Game
-        </Link>
+        </button>
         <Link href="/leaderboard" className="hover:underline">
           Leaderboard
         </Link>
