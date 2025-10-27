@@ -82,7 +82,7 @@ export default function Home() {
         </div>
         <div className="w-full mb-6 mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Carousel - takes up 2 columns on desktop, full width on mobile */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 px-8">
             <Carousel className="w-full">
               <CarouselContent>
                 {Array.from({ length: 5 }).map((_, index) => (
