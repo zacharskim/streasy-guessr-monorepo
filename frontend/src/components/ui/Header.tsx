@@ -19,9 +19,6 @@ export default function Header() {
         >
           New Game
         </Link>
-        <Link href="/catalog" className="hover:underline">
-          Catalog
-        </Link>
         <Link href="/leaderboard" className="hover:underline">
           Leaderboard
         </Link>

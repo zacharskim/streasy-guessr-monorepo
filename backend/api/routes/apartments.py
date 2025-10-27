@@ -140,7 +140,6 @@ def list_apartments(
 ):
     """
     List apartments with optional filters.
-    Useful for the catalog page.
     """
     conn = get_db()
     cursor = conn.cursor()
