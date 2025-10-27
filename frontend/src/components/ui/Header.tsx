@@ -6,7 +6,7 @@ import { DarkModeToggle } from "./DarkModeToggle";
 
 export default function Header() {
   return (
-    <header className="px-4 lg:px-6 h-14 flex items-center justify-between border-b">
+    <header className="px-4 lg:px-6 h-14 flex items-center justify-between border-b dark:border-gray-400">
       <Link href="/" className="flex items-center">
         <Image src={BuildingIcon} alt="Building Icon" width={24} height={24} className="h-6 w-6 mr-2 dark:invert" />
         <span className="font-bold text-lg">Rent Golf</span>
