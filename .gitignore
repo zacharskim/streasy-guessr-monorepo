@@ -197,3 +197,4 @@ listing_images/
 backend/data
 backend/db/*.db
 backend/.claude/
+backend/.env
