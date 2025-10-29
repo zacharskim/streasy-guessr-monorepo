@@ -120,6 +120,8 @@ export default function Home() {
                 onNextRound={handleNextRound}
                 isLastRound={currentRound >= totalRounds}
                 finalScore={totalScore}
+                allGuesses={guesses}
+                totalRounds={totalRounds}
               />
             )
           )}
@@ -139,7 +141,7 @@ export default function Home() {
     <div className="min-h-screen flex flex-col bg-neutral-100 dark:bg-neutral-800">
       {!hasStarted && <LandingModal onPlay={() => setHasStarted(true)} />}
       <div className={`flex flex-col flex-1 transition-opacity duration-300 ${hasStarted ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-        {hasStarted && <Header />}
+        {hasStarted && <Header onResetGame={() => setHasStarted(false)} />}
         {hasStarted ? renderGameContent() : <div className="flex-1" />}
         {hasStarted && <Footer />}
       </div>

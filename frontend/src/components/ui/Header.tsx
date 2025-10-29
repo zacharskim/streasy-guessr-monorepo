@@ -7,12 +7,21 @@ import BuildingIcon from "@/app/building.png";
 import { DarkModeToggle } from "./DarkModeToggle";
 import { useGameStore } from "@/stores/gameStore";
 
-export default function Header() {
+interface HeaderProps {
+  onResetGame: () => void;
+}
+
+export default function Header({ onResetGame }: HeaderProps) {
   const { resetGame } = useGameStore();
+
+  const handleLogoClick = () => {
+    onResetGame();  // Reset hasStarted in Home
+    resetGame();    // Reset game store
+  };
 
   return (
     <header className="px-4 lg:px-6 h-14 flex items-center justify-between border-b dark:border-gray-400">
-      <Link href="/" className="flex items-center">
+      <Link href="/" className="flex items-center" onClick={handleLogoClick}>
         <Image src={BuildingIcon} alt="Building Icon" width={24} height={24} className="h-6 w-6 mr-2 dark:invert" />
         <span className="font-bold text-lg">Rent Golf</span>
       </Link>
