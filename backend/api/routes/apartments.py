@@ -112,12 +112,12 @@ def validate_guess(guess: dict):
     difference = abs(guessed_rent - actual_rent)
     percentage_off = (difference / actual_rent) * 100
 
-    # Score calculation: 100 points max, lose points based on % error
-    # Perfect guess = 100 points
-    # 10% off = 90 points
+    # Score calculation: Golf-style scoring, lower is better
+    # Perfect guess = 0 points
+    # 14% off = 14 points
     # 50% off = 50 points
-    # 100%+ off = 0 points
-    score = max(0, int(100 - percentage_off))
+    # Score is just the percentage error
+    score = round(percentage_off, 2)
 
     return {
         "apartment_id": apartment_id,
