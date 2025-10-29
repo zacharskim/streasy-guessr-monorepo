@@ -36,6 +36,7 @@ export default function Home() {
     resetGame();
   }, [resetGame]);
 
+
   const lastGuess = guesses.length > 0 ? guesses[guesses.length - 1] : null;
 
   const handleSubmitGuess = async () => {
@@ -82,12 +83,12 @@ export default function Home() {
         </div>
         <div className="w-full mb-6 mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Carousel - takes up 2 columns on desktop, full width on mobile */}
-          <div className="lg:col-span-2 px-8">
-            <Carousel className="w-full">
+          <div className="lg:col-span-2 px-8 select-none">
+            <Carousel key={currentApartment?.id} className="w-full">
               <CarouselContent>
                 {Array.from({ length: 5 }).map((_, index) => (
                   <CarouselItem key={index}>
-                    <div className="w-full aspect-[4/3] relative bg-gray-200 dark:bg-neutral-700">
+                    <div className="w-full aspect-[4/3] relative bg-gray-200 dark:bg-neutral-700 pointer-events-none">
                       <Image src={getApartmentImageUrl(currentApartment, index)} alt={`Apartment photo ${index + 1}`} fill className="object-cover rounded-md" />
                     </div>
                   </CarouselItem>
