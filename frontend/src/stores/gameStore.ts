@@ -121,6 +121,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   nextRound: () => {
     set((state) => ({
       currentRound: state.currentRound + 1,
+      submitted: false,
     }));
     get().loadNewApartment();
   },

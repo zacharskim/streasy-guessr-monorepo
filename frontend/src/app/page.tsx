@@ -70,15 +70,21 @@ export default function Home() {
 
     return (
       <main className="flex flex-col p-4 max-w-6xl mx-auto flex-1">
-        <div className="w-full px-4 py-2 border-b bg-white shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 dark:bg-neutral-900 dark:border-neutral-700">
-          <div className="flex items-center justify-center gap-4 text-sm">
-            <span>Round {currentRound} / {totalRounds}</span>
-            <span>Score: {totalScore}</span>
-          </div>
-          <div className="w-full sm:w-[200px] h-2 bg-gray-200 rounded-full overflow-hidden dark:bg-neutral-700">
-            <div className="bg-blue-500 h-full transition-all" style={{
-              width: `${(currentRound / totalRounds) * 100}%`
-            }} />
+        <div className="w-full px-4 py-4 border-b bg-white dark:bg-neutral-900 dark:border-neutral-700">
+          <div className="space-y-3">
+            {/* Round info - minimal and subtle */}
+            <div className="flex items-center justify-between text-xs tracking-wide font-medium">
+              <span>Round {currentRound}/{totalRounds}</span>
+              <span className="text-gray-500 dark:text-gray-400">Score: {totalScore}%</span>
+            </div>
+
+            {/* Progress bar - sleek and minimal */}
+            <div className="w-full h-1 bg-gray-200 dark:bg-neutral-700 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-black dark:bg-white transition-all duration-300"
+                style={{ width: `${(currentRound / totalRounds) * 100}%` }}
+              />
+            </div>
           </div>
         </div>
         <div className="w-full mb-6 mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -105,8 +111,8 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Guess Form - full width below carousel */}
-        <div className="w-full mt-6">
+        {/* Guess Form - fixed height to prevent page jump */}
+        <div className="w-full h-32">
           {!submitted ? (
             <GuessSubmissionForm
               guessValue={guessValue}
