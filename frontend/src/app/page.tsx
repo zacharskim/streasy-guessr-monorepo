@@ -75,7 +75,7 @@ export default function Home() {
             {/* Round info - minimal and subtle */}
             <div className="flex items-center justify-between text-xs tracking-wide font-medium">
               <span>Round {currentRound}/{totalRounds}</span>
-              <span className="text-gray-500 dark:text-gray-400">Score: {totalScore}%</span>
+              <span className="text-gray-500 dark:text-gray-400">Score: {totalScore.toFixed(2)}</span>
             </div>
 
             {/* Progress bar - sleek and minimal */}

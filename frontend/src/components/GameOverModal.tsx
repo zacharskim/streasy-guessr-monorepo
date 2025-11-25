@@ -53,7 +53,7 @@ export default function GameOverModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-neutral-900 rounded-lg max-w-md w-full p-6 shadow-lg">
+      <div className="relative bg-white dark:bg-neutral-900 rounded-lg max-w-md w-full p-6 shadow-lg">
         {/* Close button */}
         <button
           onClick={onDismiss}
@@ -66,22 +66,22 @@ export default function GameOverModal({
         <div className="text-center mb-6">
           <p className="text-2xl mb-2">🎉 Game Over! 🎉</p>
           <p className="text-4xl font-bold text-green-600 dark:text-green-400">
-            {finalScore}
+            {finalScore.toFixed(2)}
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Total Score</p>
         </div>
 
         {/* Stats grid */}
         <div className="grid grid-cols-2 gap-3 mb-6">
-          <div className="p-3 bg-purple-50 dark:bg-purple-900 rounded text-center">
-            <p className="text-xs text-purple-600 dark:text-purple-300 mb-1">Best Round</p>
-            <p className="text-xl font-bold text-purple-600 dark:text-purple-300">
+          <div className="p-3 bg-blue-50 dark:bg-blue-900 rounded text-center">
+            <p className="text-xs text-blue-600 dark:text-blue-300 mb-1">Best Round</p>
+            <p className="text-xl font-bold text-blue-600 dark:text-blue-300">
               {stats.bestScore}
             </p>
           </div>
-          <div className="p-3 bg-amber-50 dark:bg-amber-900 rounded text-center">
-            <p className="text-xs text-amber-600 dark:text-amber-300 mb-1">Avg Error</p>
-            <p className="text-xl font-bold text-amber-600 dark:text-amber-300">
+          <div className="p-3 bg-orange-50 dark:bg-orange-900 rounded text-center">
+            <p className="text-xs text-orange-600 dark:text-orange-300 mb-1">Avg Error</p>
+            <p className="text-xl font-bold text-orange-600 dark:text-orange-300">
               {stats.avgError}%
             </p>
           </div>
