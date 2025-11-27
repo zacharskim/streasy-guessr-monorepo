@@ -57,13 +57,13 @@ export default function GuessResultCard({
 
         {/* Row 2: Score and Off By */}
         <div className="grid grid-cols-2 gap-2">
-          <div className="text-center py-1 px-2 bg-blue-50 dark:bg-blue-900 rounded">
-            <p className="text-sm text-blue-600 dark:text-blue-300">Score</p>
-            <p className="text-base font-bold text-blue-600 dark:text-blue-300">{guess.score}</p>
+          <div className="text-center py-1 px-2 bg-blue-100 dark:bg-blue-900 rounded">
+            <p className="text-sm text-blue-700 dark:text-blue-300">Score</p>
+            <p className="text-base font-bold text-blue-700 dark:text-blue-300">{guess.score}</p>
           </div>
-          <div className="text-center py-1 px-2 bg-orange-50 dark:bg-orange-900 rounded">
-            <p className="text-sm text-orange-600 dark:text-orange-300">Off By</p>
-            <p className="text-sm font-bold text-orange-600 dark:text-orange-300">
+          <div className="text-center py-1 px-2 bg-orange-100 dark:bg-orange-900 rounded">
+            <p className="text-sm text-orange-700 dark:text-orange-300">Off By</p>
+            <p className="text-sm font-bold text-orange-700 dark:text-orange-300">
               ${guess.difference} ({guess.percentage_off}%)
             </p>
           </div>

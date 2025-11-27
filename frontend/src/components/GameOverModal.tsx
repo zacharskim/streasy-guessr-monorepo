@@ -73,15 +73,15 @@ export default function GameOverModal({
 
         {/* Stats grid */}
         <div className="grid grid-cols-2 gap-3 mb-6">
-          <div className="p-3 bg-blue-50 dark:bg-blue-900 rounded text-center">
-            <p className="text-xs text-blue-600 dark:text-blue-300 mb-1">Best Round</p>
-            <p className="text-xl font-bold text-blue-600 dark:text-blue-300">
+          <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded text-center">
+            <p className="text-xs text-blue-700 dark:text-blue-300 mb-1">Best Round</p>
+            <p className="text-xl font-bold text-blue-700 dark:text-blue-300">
               {stats.bestScore}
             </p>
           </div>
-          <div className="p-3 bg-orange-50 dark:bg-orange-900 rounded text-center">
-            <p className="text-xs text-orange-600 dark:text-orange-300 mb-1">Avg Error</p>
-            <p className="text-xl font-bold text-orange-600 dark:text-orange-300">
+          <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded text-center">
+            <p className="text-xs text-orange-700 dark:text-orange-300 mb-1">Avg Error</p>
+            <p className="text-xl font-bold text-orange-700 dark:text-orange-300">
               {stats.avgError}%
             </p>
           </div>
