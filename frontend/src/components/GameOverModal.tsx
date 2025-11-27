@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import Link from "next/link";
 import { GuessResult } from "@/stores/gameStore";
 
 interface GameOverModalProps {
@@ -8,6 +8,7 @@ interface GameOverModalProps {
   allGuesses: GuessResult[];
   totalRounds: number;
   onDismiss: () => void;
+  onJoinLeaderboard: () => void;
 }
 
 export default function GameOverModal({
@@ -15,6 +16,7 @@ export default function GameOverModal({
   allGuesses,
   totalRounds,
   onDismiss,
+  onJoinLeaderboard,
 }: GameOverModalProps) {
   // Calculate stats
   const calculateStats = () => {
@@ -30,26 +32,6 @@ export default function GameOverModal({
   };
 
   const stats = calculateStats();
-
-  // Auto-submit to leaderboard on mount
-  useEffect(() => {
-    const submitScore = async () => {
-      try {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/leaderboard/submit`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            score: finalScore,
-            rounds: totalRounds,
-          }),
-        });
-      } catch (err) {
-        console.error('Failed to submit score to leaderboard:', err);
-      }
-    };
-
-    submitScore();
-  }, [finalScore, totalRounds]);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -87,13 +69,21 @@ export default function GameOverModal({
           </div>
         </div>
 
-        {/* Leaderboard link */}
-        <a
+        {/* Join Leaderboard button */}
+        <button
+          onClick={onJoinLeaderboard}
+          className="block w-full text-center py-3 bg-black text-white rounded font-semibold hover:bg-gray-800 transition mb-3 dark:bg-white dark:text-black dark:hover:bg-gray-100"
+        >
+          Join the Leaderboard
+        </button>
+
+        {/* View Leaderboard link */}
+        <Link
           href="/leaderboard"
-          className="block w-full text-center py-3 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700 transition mb-3"
+          className="block w-full text-center py-2 text-blue-600 dark:text-blue-400 hover:underline text-sm mb-3"
         >
           View Leaderboard →
-        </a>
+        </Link>
 
         {/* Dismiss button */}
         <button

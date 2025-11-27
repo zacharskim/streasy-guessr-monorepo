@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { GuessResult } from "@/stores/gameStore";
 import GameOverModal from "@/components/GameOverModal";
+import JoinLeaderboardModal from "@/components/JoinLeaderboardModal";
 
 interface GuessResultCardProps {
   guess: GuessResult;
@@ -22,6 +23,7 @@ export default function GuessResultCard({
   totalRounds = 5,
 }: GuessResultCardProps) {
   const [showGameOverModal, setShowGameOverModal] = useState(isLastRound);
+  const [showJoinLeaderboardModal, setShowJoinLeaderboardModal] = useState(false);
 
   // Calculate game stats for Game Over screen
   const calculateStats = () => {
@@ -90,6 +92,23 @@ export default function GuessResultCard({
           allGuesses={allGuesses}
           totalRounds={totalRounds}
           onDismiss={() => setShowGameOverModal(false)}
+          onJoinLeaderboard={() => {
+            setShowGameOverModal(false);
+            setShowJoinLeaderboardModal(true);
+          }}
+        />
+      )}
+
+      {/* Join Leaderboard Modal */}
+      {isLastRound && showJoinLeaderboardModal && (
+        <JoinLeaderboardModal
+          finalScore={finalScore || 0}
+          totalRounds={totalRounds}
+          onDismiss={() => setShowJoinLeaderboardModal(false)}
+          onSuccess={() => {
+            setShowJoinLeaderboardModal(false);
+            window.location.href = "/leaderboard";
+          }}
         />
       )}
     </>
