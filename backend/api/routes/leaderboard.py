@@ -14,7 +14,7 @@ class LeaderboardEntry(BaseModel):
 
     player_name: str
     location: Optional[str] = None
-    total_score: int
+    total_score: float
     rounds_played: int = 3
 
 
@@ -92,7 +92,7 @@ def get_leaderboard(
         query += " WHERE location = ?"
         params.append(location)
 
-    query += " ORDER BY total_score DESC, created_at ASC LIMIT ?"
+    query += " ORDER BY total_score ASC, created_at ASC LIMIT ?"
     params.append(limit)
 
     cursor.execute(query, params)
@@ -133,8 +133,8 @@ def get_leaderboard_stats():
     cursor.execute("SELECT COUNT(*) as total FROM leaderboard")
     total = cursor.fetchone()["total"]
 
-    # Highest score
-    cursor.execute("SELECT MAX(total_score) as max_score FROM leaderboard")
+    # Best (lowest) score
+    cursor.execute("SELECT MIN(total_score) as max_score FROM leaderboard")
     max_score = cursor.fetchone()["max_score"] or 0
 
     # Average score across all players

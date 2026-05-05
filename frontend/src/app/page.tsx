@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import Image from "next/image";
 import { getApartmentImageUrl } from "@/lib/apartmentService";
@@ -12,8 +13,9 @@ import ApartmentDetailsPanel from "@/components/ApartmentDetailsPanel";
 import GuessSubmissionForm from "@/components/GuessSubmissionForm";
 import GuessResultCard from "@/components/GuessResultCard";
 
-export default function Home() {
-  const [hasStarted, setHasStarted] = useState(false);
+function HomeInner() {
+  const searchParams = useSearchParams();
+  const [hasStarted, setHasStarted] = useState(() => searchParams.get("newgame") === "true");
   const [guessValue, setGuessValue] = useState(3000);
 
   const {
@@ -32,9 +34,8 @@ export default function Home() {
   } = useGameStore();
 
   useEffect(() => {
-    // Load apartment data immediately on page load
     resetGame();
-  }, [resetGame]);
+  }, []);
 
 
   const lastGuess = guesses.length > 0 ? guesses[guesses.length - 1] : null;
@@ -153,5 +154,13 @@ export default function Home() {
         {hasStarted && <Footer />}
       </div>
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense>
+      <HomeInner />
+    </Suspense>
   );
 }

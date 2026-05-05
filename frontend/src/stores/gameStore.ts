@@ -37,7 +37,6 @@ interface GameState {
   submitted: boolean;
   loading: boolean;
   error: string | null;
-
   // Actions
   loadNewApartment: () => Promise<void>;
   submitGuess: (guessedRent: number) => Promise<GuessResult | null>;

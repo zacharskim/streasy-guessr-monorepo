@@ -9,14 +9,23 @@ import { useGameStore } from "@/stores/gameStore";
 
 interface HeaderProps {
   onResetGame: () => void;
+  onNewGame?: () => void;
 }
 
-export default function Header({ onResetGame }: HeaderProps) {
+export default function Header({ onResetGame, onNewGame }: HeaderProps) {
   const { resetGame } = useGameStore();
 
   const handleLogoClick = () => {
     onResetGame();  // Reset hasStarted in Home
     resetGame();    // Reset game store
+  };
+
+  const handleNewGame = () => {
+    if (onNewGame) {
+      onNewGame();
+    } else {
+      resetGame();
+    }
   };
 
   return (
@@ -28,7 +37,7 @@ export default function Header({ onResetGame }: HeaderProps) {
 
       <nav className="flex gap-4 text-sm uppercase items-center">
         <button
-          onClick={() => resetGame()}
+          onClick={handleNewGame}
           className="ml-auto bg-black text-white px-3 py-1 rounded hover:opacity-90 text-xs uppercase dark:bg-white dark:text-black dark:hover:opacity-80 border-0 font-normal"
         >
           New Game
