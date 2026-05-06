@@ -53,7 +53,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   totalScore: 0,
   guesses: [],
   submitted: false,
-  loading: false,
+  loading: true,
   error: null,
 
   // Load a new apartment from the backend

@@ -15,7 +15,7 @@ export default function WithHeaderLayout({ children }: { children: React.ReactNo
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-neutral-100 dark:bg-neutral-800">
+    <div className="min-h-screen flex flex-col bg-background">
       <Header onResetGame={handleResetGame} onNewGame={handleResetGame} />
       <div className="flex flex-col flex-1">{children}</div>
       <Footer />

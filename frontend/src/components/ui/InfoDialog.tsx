@@ -1,6 +1,5 @@
 "use client";
 
-import * as Dialog from "@radix-ui/react-dialog";
 import { useState } from "react";
 
 interface InfoDialogProps {
@@ -9,82 +8,77 @@ interface InfoDialogProps {
   triggerText: string;
 }
 
-// Helper function to parse content and make URLs clickable
-// Supports both markdown links [text](url) and plain URLs
 function parseContent(text: string) {
   const markdownLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g;
-  const plainUrlRegex = /(https?:\/\/[^\s\]]+)/g;
-
-  let lastIndex = 0;
   const elements: React.ReactNode[] = [];
+  const links: Array<{ start: number; end: number; text: string; url: string }> = [];
 
-  // First pass: find markdown links
-  let markdownMatch;
-  const markdownLinks: Array<{ start: number; end: number; text: string; url: string }> = [];
-  while ((markdownMatch = markdownLinkRegex.exec(text)) !== null) {
-    markdownLinks.push({
-      start: markdownMatch.index,
-      end: markdownMatch.index + markdownMatch[0].length,
-      text: markdownMatch[1],
-      url: markdownMatch[2],
-    });
+  let match;
+  while ((match = markdownLinkRegex.exec(text)) !== null) {
+    links.push({ start: match.index, end: match.index + match[0].length, text: match[1], url: match[2] });
   }
 
-  // Build elements, prioritizing markdown links
-  let textIndex = 0;
-  for (const link of markdownLinks) {
-    // Add text before the link
-    if (textIndex < link.start) {
-      elements.push(
-        <span key={`text-${textIndex}`}>{text.substring(textIndex, link.start)}</span>
-      );
+  let cursor = 0;
+  for (const link of links) {
+    if (cursor < link.start) {
+      elements.push(<span key={`t-${cursor}`}>{text.substring(cursor, link.start)}</span>);
     }
-    // Add the link
     elements.push(
-      <a
-        key={`link-${link.start}`}
-        href={link.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-blue-600 hover:underline"
-      >
+      <a key={`l-${link.start}`} href={link.url} target="_blank" rel="noopener noreferrer"
+        className="underline underline-offset-4 text-accent hover:opacity-70 transition-opacity">
         {link.text}
       </a>
     );
-    textIndex = link.end;
+    cursor = link.end;
   }
-
-  // Add remaining text
-  if (textIndex < text.length) {
-    elements.push(<span key={`text-${textIndex}`}>{text.substring(textIndex)}</span>);
+  if (cursor < text.length) {
+    elements.push(<span key={`t-${cursor}`}>{text.substring(cursor)}</span>);
   }
 
   return elements.length > 0 ? elements : <span>{text}</span>;
 }
 
 export function InfoDialog({ title, content, triggerText }: InfoDialogProps) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <Dialog.Root>
-      <Dialog.Trigger
-        className="text-sm hover:underline text-left"
-        onClick={(e) => {
-          e.stopPropagation();
-        }}
+    <>
+      <button
+        onClick={(e) => { e.stopPropagation(); setOpen(true); }}
+        className="text-sm text-left w-full hover:text-accent transition-colors"
       >
         {triggerText}
-      </Dialog.Trigger>
-      <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/50" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-neutral-900 p-6 rounded-lg shadow-lg max-w-md w-full">
-          <Dialog.Title className="text-lg font-bold text-gray-900 dark:text-white">{title}</Dialog.Title>
-          <Dialog.Description className="mt-2 text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap">
-            {parseContent(content)}
-          </Dialog.Description>
-          <Dialog.Close className="mt-4 bg-black text-white px-4 py-2 rounded hover:opacity-90 dark:bg-white dark:text-black dark:hover:opacity-80">
-            Close
-          </Dialog.Close>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+      </button>
+
+      {open && (
+        <div className="fixed inset-0 bg-foreground/60 flex items-center justify-center z-50 p-4" onClick={() => setOpen(false)}>
+          <div
+            className="relative bg-background border border-border max-w-sm w-full p-8 animate-reveal-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setOpen(false)}
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors text-lg leading-none"
+            >
+              ✕
+            </button>
+
+            <p className="text-xs tracking-widest uppercase text-muted-foreground mb-2">Info</p>
+            <h2 className="font-display text-2xl font-bold mb-5">{title}</h2>
+
+            <p className="text-sm text-foreground/70 leading-relaxed whitespace-pre-wrap">
+              {parseContent(content)}
+            </p>
+
+            <button
+              onClick={() => setOpen(false)}
+              className="mt-8 w-full py-2.5 bg-foreground text-background text-xs tracking-widest uppercase hover:opacity-80 transition-opacity"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

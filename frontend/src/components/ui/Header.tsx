@@ -1,9 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { InfoMenu } from "./InfoMenu";
-import BuildingIcon from "@/app/building.png";
 import { DarkModeToggle } from "./DarkModeToggle";
 import { useGameStore } from "@/stores/gameStore";
 
@@ -16,8 +14,8 @@ export default function Header({ onResetGame, onNewGame }: HeaderProps) {
   const { resetGame } = useGameStore();
 
   const handleLogoClick = () => {
-    onResetGame();  // Reset hasStarted in Home
-    resetGame();    // Reset game store
+    onResetGame();
+    resetGame();
   };
 
   const handleNewGame = () => {
@@ -29,20 +27,19 @@ export default function Header({ onResetGame, onNewGame }: HeaderProps) {
   };
 
   return (
-    <header className="px-4 lg:px-6 h-14 flex items-center justify-between border-b dark:border-gray-400">
-      <Link href="/" className="flex items-center" onClick={handleLogoClick}>
-        <Image src={BuildingIcon} alt="Building Icon" width={24} height={24} className="h-6 w-6 mr-2 dark:invert" />
-        <span className="font-bold text-lg">Rent Golf</span>
+    <header className="px-5 lg:px-8 h-14 flex items-center justify-between border-b border-border">
+      <Link href="/" className="flex items-center gap-2" onClick={handleLogoClick}>
+        <span className="font-display font-bold text-xl tracking-tight">Rent Golf</span>
       </Link>
 
-      <nav className="flex gap-4 text-sm uppercase items-center">
+      <nav className="flex gap-5 text-sm items-center">
         <button
           onClick={handleNewGame}
-          className="ml-auto bg-black text-white px-3 py-1 rounded hover:opacity-90 text-xs uppercase dark:bg-white dark:text-black dark:hover:opacity-80 border-0 font-normal"
+          className="text-xs tracking-widest uppercase border border-foreground px-3 py-1 hover:bg-foreground hover:text-background transition-colors"
         >
           New Game
         </button>
-        <Link href="/leaderboard" className="hover:underline">
+        <Link href="/leaderboard" className="text-sm hover:text-accent transition-colors">
           Leaderboard
         </Link>
         <InfoMenu />

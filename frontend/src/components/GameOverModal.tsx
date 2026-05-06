@@ -18,80 +18,56 @@ export default function GameOverModal({
   onDismiss,
   onJoinLeaderboard,
 }: GameOverModalProps) {
-  // Calculate stats
-  const calculateStats = () => {
-    if (allGuesses.length === 0) return { avgError: 0, bestScore: 0 };
-
-    const scores = allGuesses.map(g => g.score);
-    const errors = allGuesses.map(g => g.percentage_off);
-
-    return {
-      avgError: (errors.reduce((a, b) => a + b, 0) / errors.length).toFixed(1),
-      bestScore: Math.min(...scores), // Lower is better
-    };
-  };
-
-  const stats = calculateStats();
+  const scores = allGuesses.map(g => g.score);
+  const errors = allGuesses.map(g => g.percentage_off);
+  const avgError = errors.length ? (errors.reduce((a, b) => a + b, 0) / errors.length).toFixed(1) : "0";
+  const bestScore = scores.length ? Math.min(...scores).toFixed(1) : "0";
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="relative bg-white dark:bg-neutral-900 rounded-lg max-w-md w-full p-6 shadow-lg">
-        {/* Close button */}
+    <div className="fixed inset-0 bg-foreground/60 flex items-center justify-center z-50 p-4">
+      <div className="relative bg-background border border-border max-w-sm w-full p-8 animate-reveal-up">
         <button
           onClick={onDismiss}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 text-2xl"
+          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors text-lg leading-none"
         >
           ✕
         </button>
 
-        {/* Game Over header */}
-        <div className="text-center mb-6">
-          <p className="text-2xl mb-2">🎉 Game Over! 🎉</p>
-          <p className="text-4xl font-bold text-green-600 dark:text-green-400">
-            {finalScore.toFixed(2)}
-          </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Total Score</p>
-        </div>
+        <p className="text-xs tracking-widest uppercase text-muted-foreground mb-2">Game over</p>
+        <p className="font-display text-5xl font-bold mb-1">{finalScore.toFixed(1)}</p>
+        <p className="text-xs text-muted-foreground mb-8">total score · {totalRounds} rounds</p>
 
-        {/* Stats grid */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
-          <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded text-center">
-            <p className="text-xs text-blue-700 dark:text-blue-300 mb-1">Best Round</p>
-            <p className="text-xl font-bold text-blue-700 dark:text-blue-300">
-              {stats.bestScore}
-            </p>
+        <div className="grid grid-cols-2 gap-4 mb-8 border-t border-border pt-6">
+          <div>
+            <p className="text-xs tracking-widest uppercase text-muted-foreground mb-1">Best round</p>
+            <p className="text-xl font-semibold">{bestScore}</p>
           </div>
-          <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded text-center">
-            <p className="text-xs text-orange-700 dark:text-orange-300 mb-1">Avg Error</p>
-            <p className="text-xl font-bold text-orange-700 dark:text-orange-300">
-              {stats.avgError}%
-            </p>
+          <div>
+            <p className="text-xs tracking-widest uppercase text-muted-foreground mb-1">Avg error</p>
+            <p className="text-xl font-semibold">{avgError}%</p>
           </div>
         </div>
 
-        {/* Join Leaderboard button */}
-        <button
-          onClick={onJoinLeaderboard}
-          className="block w-full text-center py-3 bg-black text-white rounded font-semibold hover:bg-gray-800 transition mb-3 dark:bg-white dark:text-black dark:hover:bg-gray-100"
-        >
-          Join the Leaderboard
-        </button>
-
-        {/* View Leaderboard link */}
-        <Link
-          href="/leaderboard"
-          className="block w-full text-center py-2 text-blue-600 dark:text-blue-400 hover:underline text-sm mb-3"
-        >
-          View Leaderboard →
-        </Link>
-
-        {/* Dismiss button */}
-        <button
-          onClick={onDismiss}
-          className="w-full py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded transition text-sm"
-        >
-          Back to Game
-        </button>
+        <div className="space-y-2">
+          <button
+            onClick={onJoinLeaderboard}
+            className="w-full py-2.5 bg-foreground text-background text-xs tracking-widest uppercase hover:opacity-80 transition-opacity"
+          >
+            Join Leaderboard
+          </button>
+          <Link
+            href="/leaderboard"
+            className="block w-full py-2.5 text-center text-xs tracking-widest uppercase border border-border hover:bg-muted transition-colors"
+          >
+            View Leaderboard
+          </Link>
+          <button
+            onClick={onDismiss}
+            className="w-full py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Back to game
+          </button>
+        </div>
       </div>
     </div>
   );

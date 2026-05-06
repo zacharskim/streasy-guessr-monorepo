@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
+import Image from "next/image";
 import BuildingIcon from "@/app/building.png";
 
 interface LandingModalProps {
@@ -19,18 +19,22 @@ export default function LandingModal({ onPlay }: LandingModalProps) {
   };
 
   return (
-    <div className={`fixed inset-0 flex flex-col items-center justify-center bg-neutral-100 text-neutral-900 font-serif transition-opacity duration-300 z-50 ${isTransitioning ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-      <main className="flex flex-col items-center justify-center p-4 text-center">
-        <Image src={BuildingIcon} alt="Building Icon" width={96} height={96} className="mb-6" />
-        <h1 className="text-4xl font-bold mb-2 tracking-tight">Rent Golf</h1>
-        <p className="text-2xl mb-8 text-neutral-600">Finally — a way to flex your StreetEasy addiction.</p>
+    <div className={`fixed inset-0 flex flex-col items-center justify-center bg-background z-50 transition-opacity duration-300 ${isTransitioning ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+      <main className="flex flex-col items-center justify-center p-8 text-center max-w-sm">
+        <Image src={BuildingIcon} alt="Building" width={64} height={64} className="mb-6 dark:invert opacity-80" />
+        <p className="text-sm tracking-[0.3em] uppercase text-muted-foreground mb-4">New York City</p>
+        <h1 className="font-display text-6xl font-bold mb-3 leading-none tracking-tight">Rent<br />Golf</h1>
+        <p className="text-muted-foreground mb-10 leading-relaxed">
+          Finally — a way to flex your StreetEasy addiction.
+        </p>
         <button
           onClick={handlePlay}
           disabled={isTransitioning}
-          className="bg-black text-white px-6 py-3 rounded-full text-lg hover:opacity-90 transition-opacity"
+          className="bg-foreground text-background px-8 py-3 text-sm tracking-widest uppercase hover:opacity-80 transition-opacity disabled:opacity-40"
         >
-          Play Now
+          Play
         </button>
+        <p className="text-xs text-muted-foreground mt-8">5 rounds · lower score wins</p>
       </main>
     </div>
   );

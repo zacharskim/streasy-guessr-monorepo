@@ -6,12 +6,25 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import Image from "next/image";
 import { getApartmentImageUrl } from "@/lib/apartmentService";
 import { useGameStore } from "@/stores/gameStore";
+
+function ApartmentImage({ src, alt }: { src: string; alt: string }) {
+  const [errored, setErrored] = useState(false);
+  if (errored) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-muted">
+        <p className="text-xs tracking-widest uppercase text-muted-foreground">No photo</p>
+      </div>
+    );
+  }
+  return <Image src={src} alt={alt} fill className="object-cover" onError={() => setErrored(true)} />;
+}
 import LandingModal from "@/components/LandingModal";
 import Header from "@/components/ui/Header";
 import Footer from "@/components/ui/Footer";
 import ApartmentDetailsPanel from "@/components/ApartmentDetailsPanel";
 import GuessSubmissionForm from "@/components/GuessSubmissionForm";
 import GuessResultCard from "@/components/GuessResultCard";
+import { ClientPageRoot } from "next/dist/client/components/client-page";
 
 function HomeInner() {
   const searchParams = useSearchParams();
@@ -52,37 +65,40 @@ function HomeInner() {
   };
 
   const renderGameContent = () => {
-    if (loading && !currentApartment) {
+    console.log(loading, 'loading')
+      if (loading && !currentApartment) {
       return (
-        <main className="flex flex-col items-center justify-center p-4 min-h-screen">
-          <p className="text-lg">Loading apartment...</p>
+        <main className="flex flex-col items-center justify-center flex-1">
+          <p className="text-xs tracking-widest uppercase text-muted-foreground animate-pulse">Loading...</p>
         </main>
       );
     }
 
     if (!currentApartment) {
       return (
-        <main className="flex flex-col items-center justify-center p-4 min-h-screen">
-          <p className="text-lg">Failed to load apartment</p>
-          {error && <p className="text-red-500 mt-2">{error}</p>}
+        <main className="flex flex-col items-center justify-center flex-1 gap-4">
+          <p className="text-xs tracking-widest uppercase text-muted-foreground">Couldn't load apartment</p>
+          <button
+            onClick={() => resetGame()}
+            className="text-xs tracking-widest uppercase border border-border px-4 py-2 hover:bg-muted transition-colors"
+          >
+            Try again
+          </button>
         </main>
       );
     }
 
     return (
       <main className="flex flex-col p-4 max-w-6xl mx-auto flex-1">
-        <div className="w-full px-4 py-4 border-b bg-white dark:bg-neutral-900 dark:border-neutral-700">
+        <div className="w-full px-4 py-4 border-b border-border">
           <div className="space-y-3">
-            {/* Round info - minimal and subtle */}
-            <div className="flex items-center justify-between text-xs tracking-wide font-medium">
+            <div className="flex items-center justify-between text-xs tracking-widest uppercase">
               <span>Round {currentRound}/{totalRounds}</span>
-              <span className="text-gray-500 dark:text-gray-400">Score: {totalScore.toFixed(2)}</span>
+              <span className="text-muted-foreground">{totalScore.toFixed(1)} pts</span>
             </div>
-
-            {/* Progress bar - sleek and minimal */}
-            <div className="w-full h-1 bg-gray-200 dark:bg-neutral-700 rounded-full overflow-hidden">
+            <div className="w-full h-px bg-border overflow-hidden">
               <div
-                className="h-full bg-black dark:bg-white transition-all duration-300"
+                className="h-full bg-foreground transition-all duration-300"
                 style={{ width: `${(currentRound / totalRounds) * 100}%` }}
               />
             </div>
@@ -95,8 +111,8 @@ function HomeInner() {
               <CarouselContent>
                 {Array.from({ length: 5 }).map((_, index) => (
                   <CarouselItem key={index}>
-                    <div className="w-full aspect-[4/3] relative bg-gray-200 dark:bg-neutral-700 pointer-events-none">
-                      <Image src={getApartmentImageUrl(currentApartment, index)} alt={`Apartment photo ${index + 1}`} fill className="object-cover rounded-md" />
+                    <div className="w-full aspect-[4/3] relative bg-muted pointer-events-none">
+                      <ApartmentImage src={getApartmentImageUrl(currentApartment, index)} alt={`Apartment photo ${index + 1}`} />
                     </div>
                   </CarouselItem>
                 ))}
@@ -107,7 +123,7 @@ function HomeInner() {
           </div>
 
           {/* Details Panel - takes up 1 column on desktop, full width on mobile */}
-          <div className="lg:col-span-1 p-4 bg-gray-50 dark:bg-neutral-800 rounded-lg border border-gray-200 dark:border-neutral-700">
+          <div className="lg:col-span-1 p-4 bg-card border border-border">
             <ApartmentDetailsPanel apartment={currentApartment} />
           </div>
         </div>
@@ -136,9 +152,9 @@ function HomeInner() {
         </div>
 
         {error && (
-          <div className="mt-4 p-4 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 rounded w-full max-w-sm">
-            <p>{error}</p>
-            <button onClick={clearError} className="text-sm mt-2 underline">Dismiss</button>
+          <div className="mt-4 p-4 border border-border bg-muted flex items-center justify-between gap-4 w-full max-w-sm">
+            <p className="text-xs text-muted-foreground">{error}</p>
+            <button onClick={clearError} className="text-xs tracking-widest uppercase hover:text-foreground text-muted-foreground transition-colors shrink-0">Dismiss</button>
           </div>
         )}
       </main>
@@ -146,10 +162,10 @@ function HomeInner() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-neutral-100 dark:bg-neutral-800">
+    <div className="min-h-screen flex flex-col bg-background">
       {!hasStarted && <LandingModal onPlay={() => setHasStarted(true)} />}
       <div className={`flex flex-col flex-1 transition-opacity duration-300 ${hasStarted ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-        {hasStarted && <Header onResetGame={() => setHasStarted(false)} />}
+        {hasStarted && <Header onResetGame={() => setHasStarted(false)} onNewGame={() => { resetGame(); setGuessValue(3000); }} />}
         {hasStarted ? renderGameContent() : <div className="flex-1" />}
         {hasStarted && <Footer />}
       </div>

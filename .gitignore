@@ -198,3 +198,4 @@ backend/data
 backend/db/*.db
 backend/.claude/
 backend/.env
+.claude/settings.local.json

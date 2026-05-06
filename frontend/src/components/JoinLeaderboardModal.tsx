@@ -23,16 +23,13 @@ export default function JoinLeaderboardModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!playerName.trim()) {
-      setError("Please enter your name");
+      setError("Enter a name");
       return;
     }
-
     try {
       setSubmitting(true);
       setError(null);
-
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/leaderboard`,
         {
@@ -45,15 +42,9 @@ export default function JoinLeaderboardModal({
           }),
         }
       );
-
-      if (!response.ok) {
-        throw new Error("Failed to submit score");
-      }
-
+      if (!response.ok) throw new Error("Failed to submit score");
       setSubmitted(true);
-      setTimeout(() => {
-        onSuccess();
-      }, 1500);
+      setTimeout(() => onSuccess(), 1500);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -62,93 +53,68 @@ export default function JoinLeaderboardModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="relative bg-white dark:bg-neutral-900 rounded-lg max-w-md w-full p-6 shadow-lg">
-        {/* Close button */}
+    <div className="fixed inset-0 bg-foreground/60 flex items-center justify-center z-50 p-4">
+      <div className="relative bg-background border border-border max-w-sm w-full p-8 animate-reveal-up">
         <button
           onClick={onDismiss}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 text-2xl"
+          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors text-lg leading-none"
         >
           ✕
         </button>
 
         {submitted ? (
-          /* Success Screen */
-          <div className="text-center">
-            <p className="text-2xl mb-4">🎉</p>
-            <p className="text-lg font-bold mb-4 text-green-600 dark:text-green-400">
-              Score Added!
+          <div className="text-center py-4">
+            <p className="font-display text-3xl font-bold mb-2">Nice.</p>
+            <p className="text-sm text-muted-foreground">
+              {playerName} — {finalScore.toFixed(1)} pts added to the board.
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              {playerName}, your score of {finalScore.toFixed(2)} has been added to the leaderboard.
-            </p>
-            <p className="text-xs text-gray-500 dark:text-gray-500">
-              Redirecting to leaderboard...
-            </p>
+            <p className="text-xs text-muted-foreground mt-4">Redirecting...</p>
           </div>
         ) : (
-          /* Form Screen */
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
-                Join the Leaderboard
-              </h2>
+              <p className="text-xs tracking-widest uppercase text-muted-foreground mb-1">Your score</p>
+              <p className="font-display text-4xl font-bold">{finalScore.toFixed(1)}</p>
             </div>
 
-            <div>
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-              >
-                Your Name
+            <div className="border-t border-border pt-5">
+              <label htmlFor="name" className="text-xs tracking-widest uppercase text-muted-foreground block mb-2">
+                Name
               </label>
               <input
                 id="name"
                 type="text"
                 value={playerName}
                 onChange={(e) => setPlayerName(e.target.value)}
-                placeholder="Enter your name"
-                className="w-full px-4 py-2 border border-gray-300 dark:border-neutral-600 rounded bg-white dark:bg-neutral-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                placeholder="Your name"
+                className="w-full border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-foreground"
                 disabled={submitting}
                 autoFocus
               />
-              {error && (
-                <p className="text-red-600 dark:text-red-400 text-xs mt-1">
-                  {error}
-                </p>
-              )}
+              {error && <p className="text-destructive text-xs mt-1">{error}</p>}
             </div>
 
-            <div className="bg-blue-50 dark:bg-blue-950 rounded p-3 border border-blue-200 dark:border-blue-800">
-              <p className="text-sm text-blue-700 dark:text-blue-300">
-                Score: <span className="font-bold">{finalScore.toFixed(2)}</span>
-              </p>
-            </div>
-
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex-1 py-2 bg-black text-white font-semibold rounded hover:opacity-90 disabled:opacity-50 transition dark:bg-white dark:text-black dark:hover:opacity-80"
+                className="flex-1 py-2.5 bg-foreground text-background text-xs tracking-widest uppercase hover:opacity-80 disabled:opacity-40 transition-opacity"
               >
-                {submitting ? "Adding..." : "Add to Leaderboard"}
+                {submitting ? "Submitting..." : "Submit"}
               </button>
               <button
                 type="button"
                 onClick={onDismiss}
                 disabled={submitting}
-                className="flex-1 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded transition disabled:opacity-50"
+                className="flex-1 py-2.5 border border-border text-xs tracking-widest uppercase hover:bg-muted transition-colors disabled:opacity-40"
               >
                 Skip
               </button>
             </div>
 
             <div className="text-center">
-              <Link
-                href="/leaderboard"
-                className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
-              >
-                View Leaderboard →
+              <Link href="/leaderboard" className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors">
+                View leaderboard
               </Link>
             </div>
           </form>
