@@ -1,5 +1,4 @@
 """FastAPI application for Streasy Guessr backend."""
-import os
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,16 +15,10 @@ app = FastAPI(
     version="0.1.0"
 )
 
-# CORS middleware for Next.js frontend
-allowed_origins = os.getenv(
-    "ALLOWED_ORIGINS",
-    "http://localhost:3000,http://localhost:8000,http://192.168.1.68:3000,http://192.168.1.157:3000, http://192.168.1.68:3000"
-).split(",")
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -37,15 +30,3 @@ app.include_router(leaderboard.router, prefix="/api", tags=["leaderboard"])
 # Serve static images
 IMAGES_DIR = Path(__file__).parent.parent / "images"
 app.mount("/images", StaticFiles(directory=str(IMAGES_DIR)), name="images")
-
-
-@app.get("/")
-def root():
-    """Health check endpoint."""
-    return {"status": "ok", "message": "Streasy Guessr API"}
-
-
-@app.get("/health")
-def health():
-    """Health check endpoint."""
-    return {"status": "healthy"}
