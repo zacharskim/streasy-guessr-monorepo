@@ -5,6 +5,7 @@ import json
 import time
 import random
 import typing
+from pathlib import Path
 
 
 class PayloadType(typing.TypedDict):
@@ -298,15 +299,13 @@ async def scrape_listing(listing_url: str, tab: uc.Tab) -> dict | None:
         return None
 
 
-async def collect_listing_data():
+async def collect_listing_data(listing_urls_file: str = "./listing_urls.json", output_file: str = "scraped_apartments.json"):
     """
     Phase 2: Visit each URL directly and scrape listing data
     This is slow and careful to avoid detection
     Creates a FRESH browser session for each listing
     """
 
-    # Load URLs from file
-    listing_urls_file = "./listing_urls.json"
     with open(listing_urls_file, "r") as f:
         data = json.load(f)
 
@@ -324,7 +323,7 @@ async def collect_listing_data():
     failed_urls = []
 
     # Load existing progress if file exists
-    progress_file = "scraped_apartments.json"
+    progress_file = output_file
     try:
         with open(progress_file, "r") as f:
             existing_data = json.load(f)
@@ -383,7 +382,8 @@ async def collect_listing_data():
                 print(f"\nFAILED. Total failures: {len(failed_urls)}")
 
                 # Save failed URLs
-                with open("failed_urls.json", "w") as f:
+                failed_urls_file = str(Path(output_file).parent / "failed_urls.json")
+                with open(failed_urls_file, "w") as f:
                     json.dump(
                         {
                             "failed_at": time.strftime("%Y-%m-%d %H:%M:%S"),
@@ -431,4 +431,8 @@ async def collect_listing_data():
 
 
 if __name__ == "__main__":
-    uc.loop().run_until_complete(collect_listing_data())
+    _BACKEND_DIR = Path(__file__).parent.parent
+    uc.loop().run_until_complete(collect_listing_data(
+        listing_urls_file=str(_BACKEND_DIR / "data" / "listing_urls.json"),
+        output_file=str(_BACKEND_DIR / "data" / "scraped_apartments.json"),
+    ))

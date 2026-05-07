@@ -1,25 +1,22 @@
 """Import scraped apartment data from JSON into SQLite database."""
 import sqlite3
 import json
-import os
 from pathlib import Path
 
-# Paths
-DB_DIR = Path(__file__).parent
-DB_PATH = DB_DIR / "apartments.db"
-DATA_PATH = DB_DIR.parent / "data" / "scraped_apartments.json"
+_DB_DIR = Path(__file__).parent
 
 
-def import_apartments():
+def import_apartments(
+    data_path: Path = _DB_DIR.parent / "data" / "scraped_apartments.json",
+    db_path: Path = _DB_DIR / "apartments.db",
+):
     """Load apartments from JSON and insert into database."""
-    # Load JSON data
-    with open(DATA_PATH, 'r') as f:
+    with open(data_path, 'r') as f:
         apartments = json.load(f)
 
     print(f"Loaded {len(apartments)} apartments from JSON")
 
-    # Connect to database
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     # Insert apartments
@@ -69,3 +66,4 @@ def import_apartments():
 
 if __name__ == "__main__":
     import_apartments()
+

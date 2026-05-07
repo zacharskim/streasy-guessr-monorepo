@@ -114,14 +114,11 @@ async def download_listing_images(
     return results
 
 
-async def main():
+async def main(data_file: Path = Path("scraped_apartments.json"), output_dir: Path = Path("images"), max_images: int = 5):
     """Main function to download all images from scraped apartments."""
 
-    # Configuration
-    MAX_IMAGES_PER_LISTING = 5
+    MAX_IMAGES_PER_LISTING = max_images
 
-    # Load scraped data
-    data_file = Path("scraped_apartments.json")
     if not data_file.exists():
         print(f"✗ Error: {data_file} not found!")
         print("Run the scraper first to generate apartment data.")
@@ -132,15 +129,11 @@ async def main():
 
     print(f"Loaded {len(apartments)} apartments from {data_file}")
 
-    # Count total images (limited per listing)
     total_images = sum(
         min(len(apt.get("image_ids", [])), MAX_IMAGES_PER_LISTING) for apt in apartments
     )
-    print(
-        f"Total images to download: {total_images} ({MAX_IMAGES_PER_LISTING} per listing)"
-    )
+    print(f"Total images to download: {total_images} ({MAX_IMAGES_PER_LISTING} per listing)")
 
-    output_dir = Path("images")
     output_dir.mkdir(exist_ok=True)
     print(f"Saving images to: {output_dir.absolute()}")
 
@@ -186,4 +179,9 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    _BACKEND_DIR = Path(__file__).parent.parent
+    asyncio.run(main(
+        data_file=_BACKEND_DIR / "data" / "scraped_apartments.json",
+        output_dir=_BACKEND_DIR / "images",
+        max_images=5,
+    ))
