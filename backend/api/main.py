@@ -2,7 +2,7 @@
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pathlib import Path
 
 from api.routes import apartments, leaderboard
@@ -27,6 +27,13 @@ app.add_middleware(
 app.include_router(apartments.router, prefix="/api", tags=["apartments"])
 app.include_router(leaderboard.router, prefix="/api", tags=["leaderboard"])
 
-# Serve static images
+# Serve static images with long-lived cache headers so Cloudflare caches them
 IMAGES_DIR = Path(__file__).parent.parent / "images"
-app.mount("/images", StaticFiles(directory=str(IMAGES_DIR)), name="images")
+
+@app.get("/images/{filename}")
+async def serve_image(filename: str):
+    path = IMAGES_DIR / filename
+    return FileResponse(
+        path,
+        headers={"Cache-Control": "public, max-age=31536000, immutable"},
+    )

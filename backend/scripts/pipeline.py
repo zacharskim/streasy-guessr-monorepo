@@ -59,10 +59,33 @@ from pathlib import Path
 #     "https://streeteasy.com/for-rent/astoria"
 #     "https://streeteasy.com/for-rent/ridgewood"
 SEARCH_URLS = [
+    # Standard borough baselines
     "https://streeteasy.com/for-rent/manhattan",
     "https://streeteasy.com/for-rent/brooklyn",
     "https://streeteasy.com/for-rent/queens",
     "https://streeteasy.com/for-rent/bronx",
+
+    # Cheap listings — players will overshoot
+    "https://streeteasy.com/for-rent/bronx/price:1000-1800",
+    "https://streeteasy.com/for-rent/queens/price:1000-1800",
+    "https://streeteasy.com/for-rent/brooklyn/price:1000-2000",
+
+    # Expensive small — paying for location not space
+    "https://streeteasy.com/for-rent/manhattan/beds:0-1%7Cprice:4000-8000",
+    "https://streeteasy.com/for-rent/west-village/beds:0-1",
+    "https://streeteasy.com/for-rent/tribeca/beds:0-1",
+
+    # Pre-war high rent — old building premium
+    "https://streeteasy.com/for-rent/manhattan/pre_war:yes%7Cprice:5000-12000",
+    "https://streeteasy.com/for-rent/brooklyn/pre_war:yes%7Cprice:3000-6000",
+
+    # Large outer borough — hidden gems
+    "https://streeteasy.com/for-rent/queens/sqft%3E=1200%7Cprice:2000-3500",
+    "https://streeteasy.com/for-rent/brooklyn/sqft%3E=1200%7Cprice:2000-3500",
+
+    # Large luxury
+    "https://streeteasy.com/for-rent/manhattan/sqft%3E=1500%7Cprice:8000-20000",
+    "https://streeteasy.com/for-rent/manhattan/sqft%3E=2000%7Cbeds:3%7Cpre_war:yes?sort_by=price_asc",
 ]
 
 # Max search result pages to scrape per URL (each page has ~20 listings)

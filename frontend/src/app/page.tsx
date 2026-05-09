@@ -61,6 +61,7 @@ function HomeInner() {
     if (currentRound < totalRounds) {
       nextRound();
       setGuessValue(3000);
+      if (window.innerWidth < 768) window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
