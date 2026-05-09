@@ -13,6 +13,7 @@ services:
       context: ./frontend
       args:
         NEXT_PUBLIC_API_URL: https://rentgolf.infinite-monkey.biz/api
+      network: host
     restart: unless-stopped
     ports:
       - "3000:3000"
