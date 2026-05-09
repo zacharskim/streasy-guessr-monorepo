@@ -66,7 +66,6 @@ function HomeInner() {
   };
 
   const renderGameContent = () => {
-    console.log(loading, 'loading')
       if (loading && !currentApartment) {
       return (
         <main className="flex flex-col items-center justify-center flex-1">
